@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/Connection.php';
-require_once __DIR__ . '/Adsense.php'; 
+require_once __DIR__ . '/Adsense.php';
 
 class User
 {
@@ -18,62 +18,86 @@ class User
         $this->password = $password;
         $this->role = $role;
     }
-    
-    public static function all(){
+
+    public static function all()
+    {
         $pdo = Connection::getConnection();
         $stmt = $pdo->query("SELECT * FROM users");
         $out = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row){
-            $out = new User(
-                $row['id'],$row['name'], $row['email'], $row['password'], $row['role']);            
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $out[] = new User(
+                $row['id'],
+                $row['name'],
+                $row['email'],
+                $row['password'],
+                $row['role']
+            );
         }
         return $out;
     }
-    
-    public static function find($id){
+
+    public static function find($id)
+    {
         $pdo = Connection::getConnection();
         $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->execute([$id]);
-        if  ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             return new User(
-                $row['id'],$row['name'], $row['email'], $row['password'], $row['role']);            
+                $row['id'],
+                $row['name'],
+                $row['email'],
+                $row['password'],
+                $row['role']
+            );
         }
         return null;
     }
-    
-    public static function save(){
+
+    public function save()
+    {
         $pdo = Connection::getConnection();
-        if($this->id === null){
+        if ($this->id === null) {
             $stmt = $pdo->prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)');
-            $ok = $stmt->execute([$this->name, $this->$email, $this->$password, $this->$role]);
+            $ok = $stmt->execute([$this->name, $this->email, $this->password, $this->role]);
         }
-        if($ok){
+        if ($ok) {
             $this->id = $pdo->lastInsertId();
             return $ok;
-        }else{
+        } else {
             $stmt = $pdo->prepare('UPDATE users SET name = ?, email = ?, password = ?, role = ? WHERE id = ?');
             return $stmt->execute([$this->name, $this->email, $this->password, $this->role, $this->id]);
         }
     }
 
-    public static function delete(){
-        if($this->id === null){
+    public function delete()
+    {
+        if ($this->id === null) {
             return false;
-        }else{
-            $pdo = $pdo = Connection::getConnection();
+        } else {
+            $pdo = Connection::getConnection();
             $stmt = $pdo->prepare('DELETE FROM users WHERE id = ?');
             return $stmt->execute([$this->id]);
-    }
+        }
     }
 
-    public static function adsenses(){
+    public static function findByEmail(string $email): ?User {
+        $pdo = Connection::getConnection();
+        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
+        $stmt->execute([$email]);
+        $row = $stmt->fetch();
+        return $row ? new User($row['id'], $row['name'], $row['email'], $row['password'], $row['role']) : null;
+    }
+
+
+    public function adsenses()
+    {
         $pdo = Connection::getConnection();
         $stmt = $pdo->prepare('SELECT * FROM adsenses WHERE user_id = ?');
-        return $stmt->execute([$this->id]);
-
+        $stmt->execute([$this->id]);
         $out = [];
-        foreach($stmt->fetchAll(PDO::FETCH_ASSOC) as $row){
-            $out[] = new Adsense($row['id'], $row['user_id'], $row['value'], $row['user_id']);
-        }return $out;
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            $out[] = new Adsense($row['id'], $row['title'], $row['description'], $row['price'], $row['user_id']);
+        }
+        return $out;
     }
 }

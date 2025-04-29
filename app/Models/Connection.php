@@ -1,7 +1,7 @@
 <?php
 // Connection.php
 class Connection {
-    protected static function getConnection(): \PDO {
+    public static function getConnection(): \PDO {
         $dbFile = __DIR__ . '/database/database.sqlite';
 
         if (!file_exists(dirname($dbFile))) {
