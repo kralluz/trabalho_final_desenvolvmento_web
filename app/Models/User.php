@@ -1,103 +1,53 @@
 <?php
-require_once __DIR__ . '/Connection.php';
-require_once __DIR__ . '/Adsense.php';
 
-class User
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable
 {
-    public int $id;
-    public String $name;
-    public String $email;
-    public String $password;
-    public String $role; // "common" ou "admin"
+    use HasApiTokens, HasFactory, Notifiable;
 
-    public function __construct($id = null, String $name = '', String $email = '', String $password = '', String $role = 'common')
-    {
-        $this->id = $id;
-        $this->name = $name;
-        $this->email = $email;
-        $this->password = $password;
-        $this->role = $role;
-    }
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role',
+    ];
 
-    public static function all()
-    {
-        $pdo = Connection::getConnection();
-        $stmt = $pdo->query("SELECT * FROM users");
-        $out = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $out[] = new User(
-                $row['id'],
-                $row['name'],
-                $row['email'],
-                $row['password'],
-                $row['role']
-            );
-        }
-        return $out;
-    }
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
 
-    public static function find($id)
-    {
-        $pdo = Connection::getConnection();
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
-        $stmt->execute([$id]);
-        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            return new User(
-                $row['id'],
-                $row['name'],
-                $row['email'],
-                $row['password'],
-                $row['role']
-            );
-        }
-        return null;
-    }
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
 
-    public function save()
-    {
-        $pdo = Connection::getConnection();
-        if ($this->id === null) {
-            $stmt = $pdo->prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)');
-            $ok = $stmt->execute([$this->name, $this->email, $this->password, $this->role]);
-        }
-        if ($ok) {
-            $this->id = $pdo->lastInsertId();
-            return $ok;
-        } else {
-            $stmt = $pdo->prepare('UPDATE users SET name = ?, email = ?, password = ?, role = ? WHERE id = ?');
-            return $stmt->execute([$this->name, $this->email, $this->password, $this->role, $this->id]);
-        }
-    }
-
-    public function delete()
-    {
-        if ($this->id === null) {
-            return false;
-        } else {
-            $pdo = Connection::getConnection();
-            $stmt = $pdo->prepare('DELETE FROM users WHERE id = ?');
-            return $stmt->execute([$this->id]);
-        }
-    }
-
-    public static function findByEmail(string $email): ?User {
-        $pdo = Connection::getConnection();
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $row = $stmt->fetch();
-        return $row ? new User($row['id'], $row['name'], $row['email'], $row['password'], $row['role']) : null;
-    }
-
-
+    /**
+     * Get all adsenses belonging to the user.
+     */
     public function adsenses()
     {
-        $pdo = Connection::getConnection();
-        $stmt = $pdo->prepare('SELECT * FROM adsenses WHERE user_id = ?');
-        $stmt->execute([$this->id]);
-        $out = [];
-        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
-            $out[] = new Adsense($row['id'], $row['title'], $row['description'], $row['price'], $row['user_id']);
-        }
-        return $out;
+        return $this->hasMany(Adsense::class);
     }
 }

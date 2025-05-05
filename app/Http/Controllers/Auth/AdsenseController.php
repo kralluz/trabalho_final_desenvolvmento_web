@@ -1,107 +1,117 @@
 <?php
 // Controllers/AdsenseController.php
 
-require_once __DIR__ . '/../../Requests/JsonResponse.php';
-require_once __DIR__ . '/../../Requests/AdsenseRequest.php';
-require_once __DIR__ . '/../../Models/Adsense.php';
-require_once __DIR__ . '/../../Models/User.php';
+namespace App\Http\Controllers\Auth;
 
-class AdsenseController 
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use App\Models\Adsense;
+use App\Models\User;
+
+class AdsenseController extends Controller
 {
     private function user()
     {
-        session_start();
-        if (!isset($_SESSION['user_id'])) {
-            return null;
-        }
-        return User::find((int)$_SESSION['user_id']);
+        return User::find(session('user_id'));
     }
 
-    public function index()
+    public function index(): JsonResponse
     {
-        return new JsonResponse(['adsenses' => Adsense::all()], 200);
+        return response()->json(['adsenses' => Adsense::all()], 200);
     }
 
-    public function show($id)
+    public function show($id): JsonResponse
     {
         $adsense = Adsense::find((int)$id);
         if (!$adsense) {
-            return new JsonResponse(['error' => 'Not found'], 404);
+            return response()->json(['error' => 'Not found'], 404);
         }
-        return new JsonResponse(['adsense' => $adsense], 200);
+        return response()->json(['adsense' => $adsense], 200);
     }
 
-    public function store($request)
+    public function store(Request $request): JsonResponse
     {
         $user = $this->user();
         if (!$user) {
-            return new JsonResponse(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $data = $request->validated();
-        $adsense = new Adsense(
-            null,
-            $data['title'],
-            $data['description'],
-            (float)$data['price'],
-            $user->id
-        );
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric'
+        ]);
+        
+        $adsense = Adsense::create([
+            'title' => $data['title'],
+            'description' => $data['description'],
+            'price' => (float)$data['price'],
+            'user_id' => $user->id
+        ]);
 
-        if (!$adsense->save()) {
-            return new JsonResponse(['error' => 'Failed to save advertisement'], 500);
+        if (!$adsense) {
+            return response()->json(['error' => 'Failed to save advertisement'], 500);
         }
 
-        return new JsonResponse(['adsense' => $adsense], 201);
+        return response()->json(['adsense' => $adsense], 201);
     }
 
-    public function update($request, $id)
+    public function update(Request $request, $id): JsonResponse
     {
         $user = $this->user();
         if (!$user) {
-            return new JsonResponse(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         $adsense = Adsense::find((int)$id);
         if (!$adsense) {
-            return new JsonResponse(['error' => 'Not found'], 404);
+            return response()->json(['error' => 'Not found'], 404);
         }
 
-        if (!AdsensePolicy::update($user, $adsense)) {
-            return new JsonResponse(['error' => 'Forbidden'], 403);
+        // Verificar se o usuário é dono do anúncio ou é admin
+        if ($adsense->user_id != $user->id && $user->role != 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
         }
 
-        $data = $request->validated();
+        $data = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'price' => 'required|numeric'
+        ]);
+        
         $adsense->title = $data['title'];
         $adsense->description = $data['description'];
         $adsense->price = (float)$data['price'];
 
         if (!$adsense->save()) {
-            return new JsonResponse(['error' => 'Failed to update advertisement'], 500);
+            return response()->json(['error' => 'Failed to update advertisement'], 500);
         }
 
-        return new JsonResponse(['adsense' => $adsense], 200);
+        return response()->json(['adsense' => $adsense], 200);
     }
 
-    public function destroy($id)
+    public function destroy($id): JsonResponse
     {
         $user = $this->user();
         if (!$user) {
-            return new JsonResponse(['error' => 'Unauthorized'], 401);
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
         $adsense = Adsense::find((int)$id);
         if (!$adsense) {
-            return new JsonResponse(['error' => 'Not found'], 404);
+            return response()->json(['error' => 'Not found'], 404);
         }
 
-        if (!AdsensePolicy::delete($user, $adsense)) {
-            return new JsonResponse(['error' => 'Forbidden'], 403);
+        // Verificar se o usuário é dono do anúncio ou é admin
+        if ($adsense->user_id != $user->id && $user->role != 'admin') {
+            return response()->json(['error' => 'Forbidden'], 403);
         }
 
         if (!$adsense->delete()) {
-            return new JsonResponse(['error' => 'Failed to delete advertisement'], 500);
+            return response()->json(['error' => 'Failed to delete advertisement'], 500);
         }
 
-        return new JsonResponse(['message' => 'Deleted'], 200);
+        return response()->json(['message' => 'Deleted'], 200);
     }
 }

@@ -1,30 +1,33 @@
 <?php
 // Controllers/AdminController.php
 
-require_once __DIR__ . '/../Response.php';
-require_once __DIR__ . '/../Models/User.php';
-require_once __DIR__ . '/../Models/Adsense.php';
+namespace App\Http\Controllers\Auth;
 
-class AdminController
+use App\Http\Controllers\Controller;
+use Illuminate\Http\JsonResponse;
+use App\Models\User;
+use App\Models\Adsense;
+
+class AdminController extends Controller
 {
     public function stats(): JsonResponse
     {
         $users = User::all();
-        $ads   = Adsense::all();
+        $ads = Adsense::all();
 
-        return new JsonResponse([
+        return response()->json([
             'total_users' => count($users),
-            'total_posts' => count($ads),
+            'total_adsenses' => count($ads),
         ], 200);
     }
 
     public function allUsers(): JsonResponse
     {
-        return new JsonResponse(['users' => User::all()], 200);
+        return response()->json(['users' => User::all()], 200);
     }
 
-    public function allPosts(): JsonResponse
+    public function allAdsenses(): JsonResponse
     {
-        return new JsonResponse(['posts' => Adsense::all()], 200);
+        return response()->json(['adsenses' => Adsense::all()], 200);
     }
 }
