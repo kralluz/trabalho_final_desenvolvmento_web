@@ -11,7 +11,10 @@
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",
         "types": "tsc --noEmit",
-        "clear": "php artisan cache:clear ; php artisan config:clear ; php artisan view:clear ; php artisan route:clear"
+        "clear": "php artisan cache:clear ; php artisan config:clear ; php artisan view:clear ; php artisan route:clear",
+        "prepare-db": "touch database/database.sqlite && php artisan migrate",
+        "setup": "composer install && npm install && npm run prepare-db",
+        "reset-db": "php artisan migrate:fresh --seed"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
