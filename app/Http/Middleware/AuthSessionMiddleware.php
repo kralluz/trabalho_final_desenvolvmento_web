@@ -4,10 +4,9 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\View;
 use Symfony\Component\HttpFoundation\Response;
 
-class HandleAppearance
+class AuthSessionMiddleware
 {
     /**
      * Handle an incoming request.
@@ -16,8 +15,10 @@ class HandleAppearance
      */
     public function handle(Request $request, Closure $next): Response
     {
-        View::share('appearance', $request->cookie('appearance') ?? 'system');
+        if (!session()->has('user_id')) {
+            return response()->json(['error' => 'Unauthorized. Please login first.'], 401);
+        }
 
         return $next($request);
     }
-}
+} 

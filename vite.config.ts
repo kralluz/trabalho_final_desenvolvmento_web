@@ -19,7 +19,16 @@ export default defineConfig({
     },
     resolve: {
         alias: {
-            'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
+            // Aliases adicionais podem ser adicionados aqui se necessário
+        },
+    },
+    server: {
+        host: 'localhost',
+        proxy: {
+            '/api': {
+                target: 'http://127.0.0.1:8000',
+                changeOrigin: true,
+            },
         },
     },
 });

@@ -13,5 +13,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
+// Rota para o exemplo de API
+Route::get('/api-exemplo', function () {
+    return Inertia::render('api-example');
+})->name('api.exemplo');
+
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
