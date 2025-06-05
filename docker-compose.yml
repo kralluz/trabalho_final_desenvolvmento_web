@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+      - /var/www/html/vendor
+      - /var/www/html/node_modules
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+    depends_on:
+      - database
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  database:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: trabvirso
+      MYSQL_USER: laravel
+      MYSQL_PASSWORD: laravel
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  vite:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run dev
+
+volumes:
+  mysql_data:
