@@ -5,49 +5,45 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AdSense extends Model
+class Adsense extends Model
 {
     use HasFactory;
 
-    protected $table = 'adsense';
-
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
-        'titulo',
-        'descricao',
-        'codigo_adsense',
-        'posicao',
-        'ativo'
+        'title',
+        'description',
+        'price',
+        'user_id',
     ];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
     protected $casts = [
-        'ativo' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'price' => 'float',
     ];
 
-    // Constantes para posições
-    const POSICOES = [
-        'header' => 'Cabeçalho',
-        'sidebar' => 'Barra Lateral',
-        'footer' => 'Rodapé',
-        'content' => 'Conteúdo'
-    ];
-
-    // Acessor para obter o nome da posição
-    public function getPosicaoNomeAttribute()
+    /**
+     * Get the user that owns the adsense.
+     */
+    public function user()
     {
-        return self::POSICOES[$this->posicao] ?? $this->posicao;
+        return $this->belongsTo(User::class);
     }
 
-    // Scope para buscar apenas anúncios ativos
-    public function scopeAtivos($query)
+    /**
+     * Get the images for the adsense.
+     */
+    public function images()
     {
-        return $query->where('ativo', true);
-    }
-
-    // Scope para buscar por posição
-    public function scopePorPosicao($query, $posicao)
-    {
-        return $query->where('posicao', $posicao);
+        return $this->hasMany(Image::class);
     }
 }
+?>
