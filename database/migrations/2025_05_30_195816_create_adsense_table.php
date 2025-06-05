@@ -13,11 +13,6 @@ return new class extends Migration
     {
         Schema::create('adsense', function (Blueprint $table) {
             $table->id();
-            $table->string('titulo');
-            $table->text('descricao');
-            $table->text('codigo_adsense');
-            $table->enum('posicao', ['header', 'sidebar', 'footer', 'content']);
-            $table->boolean('ativo')->default(true);
             $table->timestamps();
         });
     }
