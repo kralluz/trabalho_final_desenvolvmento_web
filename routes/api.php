@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\AdsenseController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,6 +19,7 @@ use Illuminate\Validation\ValidationException;
 |
 */
 
+// Rotas de saúde e documentação
 Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',
@@ -32,7 +35,8 @@ Route::get('/docs', function () {
         'titulo' => 'Documentação da API Trabvirso',
         'versao' => '1.0.0',
         'descricao' => 'Endpoints da API da aplicação Trabvirso',
-        'url_base' => url('/api'),        'endpoints' => [
+        'url_base' => url('/api'),
+        'endpoints' => [
             [
                 'metodo' => 'GET',
                 'caminho' => '/api/health',
@@ -41,96 +45,90 @@ Route::get('/docs', function () {
                 'exemplo_resposta' => [
                     'status' => 'ok',
                     'message' => 'Application is running',
-                    'timestamp' => '2025-05-28T17:42:43.729936Z',
-                    'version' => '10.48.29',
+                    'timestamp' => '2025-06-06T00:46:49.956105Z',
+                    'version' => '12.8.0',
                     'environment' => 'local'
                 ]
             ],
             [
-                'metodo' => 'GET',
-                'caminho' => '/api/docs',
-                'descricao' => 'Obtém a documentação da API',
-                'parametros' => [],
+                'metodo' => 'POST',
+                'caminho' => '/api/auth/login',
+                'descricao' => 'Realiza login do usuário',
+                'parametros' => [
+                    'email' => 'string (obrigatório, formato email)',
+                    'password' => 'string (obrigatório)'
+                ],
+                'exemplo_requisicao' => [
+                    'email' => 'usuario@exemplo.com',
+                    'password' => 'senha123'
+                ],
                 'exemplo_resposta' => [
-                    'titulo' => 'Documentação da API Trabvirso',
-                    'endpoints' => '...'
+                    'sucesso' => true,
+                    'dados' => [
+                        'usuario' => [
+                            'id' => 1,
+                            'name' => 'João Silva',
+                            'email' => 'joao@exemplo.com',
+                            'role' => 'user'
+                        ],
+                        'token' => 'eyJhbGciOiJIUzI1NiIs...',
+                        'tipo_token' => 'Bearer'
+                    ],
+                    'mensagem' => 'Login realizado com sucesso'
                 ]
             ],
             [
                 'metodo' => 'GET',
-                'caminho' => '/api/usuarios',
-                'descricao' => 'Lista todos os usuários cadastrados',
+                'caminho' => '/api/adsense',
+                'descricao' => 'Lista todos os anúncios',
                 'parametros' => [],
                 'exemplo_resposta' => [
                     'sucesso' => true,
                     'dados' => [
                         [
                             'id' => 1,
-                            'nome' => 'João Silva',
-                            'email' => 'joao@exemplo.com',
-                            'criado_em' => '2025-05-28T10:00:00Z'
+                            'title' => 'Vendo carro',
+                            'description' => 'Carro em ótimo estado',
+                            'price' => 15000.00,
+                            'user_id' => 1,
+                            'created_at' => '2025-06-06T00:00:00Z'
                         ]
                     ],
-                    'total' => 3,
-                    'mensagem' => 'Lista de usuários obtida com sucesso'
+                    'total' => 1,
+                    'mensagem' => 'Lista de anúncios obtida com sucesso'
                 ]
             ],
             [
                 'metodo' => 'POST',
-                'caminho' => '/api/usuarios',
-                'descricao' => 'Cria um novo usuário',
+                'caminho' => '/api/adsense',
+                'descricao' => 'Cria um novo anúncio',
+                'autenticacao' => 'Token Bearer obrigatório',
                 'parametros' => [
-                    'nome' => 'string (obrigatório, máx 255 caracteres)',
-                    'email' => 'string (obrigatório, formato email)',
-                    'senha' => 'string (obrigatório, mínimo 6 caracteres)'
+                    'title' => 'string (obrigatório, máx 255 caracteres)',
+                    'description' => 'string (obrigatório)',
+                    'price' => 'number (obrigatório)'
                 ],
                 'exemplo_requisicao' => [
-                    'nome' => 'João Silva',
-                    'email' => 'joao@exemplo.com',
-                    'senha' => 'senha123'
-                ],
-                'exemplo_resposta' => [
-                    'sucesso' => true,
-                    'dados' => [
-                        'id' => 123,
-                        'nome' => 'João Silva',
-                        'email' => 'joao@exemplo.com',
-                        'criado_em' => '2025-05-28T15:00:00Z'
-                    ],
-                    'mensagem' => 'Usuário criado com sucesso'
-                ]
-            ],
-            [
-                'metodo' => 'GET',
-                'caminho' => '/api/user',
-                'descricao' => 'Obtém informações do usuário autenticado',
-                'autenticacao' => 'Token Bearer obrigatório (Sanctum)',
-                'cabecalhos' => [
-                    'Authorization' => 'Bearer {seu-token}'
-                ],
-                'parametros' => [],
-                'exemplo_resposta' => [
-                    'id' => 1,
-                    'name' => 'João Silva',
-                    'email' => 'joao@exemplo.com',
-                    'email_verified_at' => '2025-05-28T10:00:00.000000Z',
-                    'created_at' => '2025-05-28T10:00:00.000000Z',
-                    'updated_at' => '2025-05-28T10:00:00.000000Z'
+                    'title' => 'Vendo notebook',
+                    'description' => 'Notebook Dell em perfeito estado',
+                    'price' => 2500.00
                 ]
             ]
         ],
         'autenticacao' => [
-            'tipo' => 'Laravel Sanctum',
+            'tipo' => 'Bearer Token',
             'descricao' => 'Alguns endpoints requerem autenticação usando tokens Bearer',
             'como_autenticar' => [
-                '1. Faça login através do endpoint /login',
+                '1. Faça login através do endpoint /api/auth/login',
                 '2. Use o token retornado no cabeçalho Authorization',
                 '3. Formato: Authorization: Bearer {seu-token}'
             ]
         ],
         'respostas_comuns' => [
             '200' => 'Sucesso',
+            '201' => 'Criado com sucesso',
             '401' => 'Não autenticado',
+            '403' => 'Acesso negado',
             '404' => 'Não encontrado',
             '422' => 'Erro de validação',
             '500' => 'Erro do servidor'
@@ -139,11 +137,19 @@ Route::get('/docs', function () {
     ]);
 });
 
-// Listar usuários do banco de dados
+// Rotas de autenticação
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+});
+
+// Rotas de usuários (mantendo compatibilidade)
 Route::get('/usuarios', function () {
     try {
         $usuarios = DB::table('users')
-            ->select('id', 'name as nome', 'email', 'created_at as criado_em', 'updated_at as atualizado_em')
+            ->select('id', 'name as nome', 'email', 'role', 'created_at as criado_em', 'updated_at as atualizado_em')
             ->get();
 
         return response()->json([
@@ -166,7 +172,8 @@ Route::post('/usuarios', function (Request $request) {
         $dados = $request->validate([
             'nome' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email',
-            'senha' => 'required|string|min:6'
+            'senha' => 'required|string|min:6',
+            'role' => 'sometimes|string|in:user,admin'
         ]);
 
         // Criar usuário no banco
@@ -174,13 +181,14 @@ Route::post('/usuarios', function (Request $request) {
             'name' => $dados['nome'],
             'email' => $dados['email'],
             'password' => Hash::make($dados['senha']),
+            'role' => $dados['role'] ?? 'user',
             'created_at' => now(),
             'updated_at' => now()
         ]);
 
         // Buscar o usuário criado
         $usuario = DB::table('users')
-            ->select('id', 'name as nome', 'email', 'created_at as criado_em', 'updated_at as atualizado_em')
+            ->select('id', 'name as nome', 'email', 'role', 'created_at as criado_em', 'updated_at as atualizado_em')
             ->where('id', $userId)
             ->first();
 
@@ -203,7 +211,11 @@ Route::post('/usuarios', function (Request $request) {
     }
 });
 
-// Rota comentada devido a problemas com Sanctum
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+// CRUD de Adsense - usando Controller
+Route::prefix('adsense')->group(function () {
+    Route::get('/', [AdsenseController::class, 'index']);
+    Route::get('/{id}', [AdsenseController::class, 'show']);
+    Route::post('/', [AdsenseController::class, 'store']);
+    Route::put('/{id}', [AdsenseController::class, 'update']);
+    Route::delete('/{id}', [AdsenseController::class, 'destroy']);
+});

@@ -54,6 +54,54 @@ class AuthController extends Controller
         session()->put('user_id', $user->id);
         session()->put('user_role', $user->role);
 
-        return response()->json(['message' => 'Logged in'], 200);
+        return response()->json([
+            'message' => 'Logged in successfully',
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role
+            ]
+        ], 200);
+    }
+
+    public function logout(Request $request): JsonResponse
+    {
+        // Verificar se o usuário está logado
+        if (!session('user_id')) {
+            return response()->json(['error' => 'Not authenticated'], 401);
+        }
+
+        // Limpar sessão
+        session()->flush();
+        session()->regenerate();
+
+        return response()->json(['message' => 'Logged out successfully'], 200);
+    }
+
+    public function me(Request $request): JsonResponse
+    {
+        $userId = session('user_id');
+        
+        if (!$userId) {
+            return response()->json(['error' => 'Not authenticated'], 401);
+        }
+
+        $user = User::find($userId);
+        
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+                'created_at' => $user->created_at,
+                'updated_at' => $user->updated_at
+            ]
+        ], 200);
     }
 }
