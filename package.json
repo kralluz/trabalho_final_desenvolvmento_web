@@ -6,8 +6,11 @@
         "build:ssr": "vite build && vite build --ssr",
         "dev": "vite",
         "serve": "php artisan serve",
+        "check-setup": "node smart-start.js",
+        "smart-start": "node smart-start.js && npm run start",
+        "auto-setup": "npm run check-setup || npm run setup",
         "start": "concurrently --names \"LARAVEL,VITE\" --prefix-colors \"blue,green\" \"npm run serve\" \"npm run dev\"",
-        "start:full": "npm run setup && npm run start",
+        "start:auto": "npm run auto-setup && npm run start",
         "format": "prettier --write resources/",
         "format:check": "prettier --check resources/",
         "lint": "eslint . --fix",
@@ -15,7 +18,10 @@
         "clear": "php artisan cache:clear ; php artisan config:clear ; php artisan view:clear ; php artisan route:clear",
         "prepare-db": "touch database/database.sqlite && php artisan migrate",
         "setup": "composer install && npm install && npm run prepare-db",
-        "reset-db": "php artisan migrate:fresh --seed"
+        "reset-db": "php artisan migrate:fresh --seed",
+        "check-migrations": "php artisan migrate:status",
+        "migrate": "php artisan migrate",
+        "migrate-fresh": "php artisan migrate:fresh --seed"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",

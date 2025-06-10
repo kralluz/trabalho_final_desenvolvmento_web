@@ -137,6 +137,19 @@ Route::get('/docs', function () {
     ]);
 });
 
+// Rota de teste para listar usuários
+Route::get('/users', function () {
+    try {
+        $users = DB::table('users')->select('id', 'name', 'email', 'created_at')->get();
+        return response()->json($users);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Erro ao buscar usuários',
+            'message' => $e->getMessage()
+        ], 500);
+    }
+});
+
 // Rotas de autenticação
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);

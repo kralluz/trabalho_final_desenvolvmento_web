@@ -1,0 +1,36 @@
+:root {
+  --primary-orange: #ff6f00;
+  --white: #ffffff;
+  --light-gray: #f5f5f5;
+  --dark-gray: #333333;
+  --border-gray: #bdbdbd;
+}
+
+.card {
+  background-color: var(--white);
+  border: 1px solid var(--border-gray);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  max-width: 100%;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.card-title {
+  font-size: 1.2rem;
+  color: var(--primary-orange);
+  margin-bottom: 0.5rem;
+}
+
+.card-text {
+  color: var(--dark-gray);
+  font-size: 1rem;
+}
+
+.imagemCard {
+  max-width: 100%;
+}
