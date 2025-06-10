@@ -1,6 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter as Router } from "react-router-dom";
+import "./App.css";
+import AppRoutes from "./AppRoutes";
+import { AuthProvider } from "./contexts/AuthContext";
+import Header from "./components/Header/index";
+import Footer from "./components/Footer/index"; 
 
 // Configure axios defaults for Laravel API
 axios.defaults.baseURL = 'http://localhost:8000';
@@ -94,7 +100,7 @@ const App: React.FC = () => {
     const handleTabClick = (tab: 'health' | 'docs' | 'users') => {
         setActiveTab(tab);
         setError(null);
-        
+
         switch (tab) {
             case 'health':
                 checkApiHealth();
@@ -109,69 +115,17 @@ const App: React.FC = () => {
     };
 
     return (
-      <>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      <h1>teste</h1>
-      </>
+        <Router>
+            <AuthProvider>
+                <div className="app-container">
+                    <Header />
+                    <main className="app-main">
+                        <AppRoutes />
+                    </main>
+                    <Footer />
+                </div>
+            </AuthProvider>
+        </Router>
     );
 };
 
