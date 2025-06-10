@@ -1,0 +1,31 @@
+:root {
+  --primary-orange: #FF6F00;
+  --light-green: #4CAF50;
+  --dark-green: #388E3C;
+  --white: #FFFFFF;
+  --light-gray: #F5F5F5;
+  --text-gray: #333333;
+  --warning-yellow: #FFEB3B;
+  --border-gray: #BDBDBD;
+}
+
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: var(--white);
+  font-family: "Segoe UI", Roboto, sans-serif;
+  color: var(--text-gray);
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
+  padding: 1rem;
+}
+ 
