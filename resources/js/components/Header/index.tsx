@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./header.style.css";
+import LogoBranca from "/resources/js/assets/images/LogoBranca.png";
 
 const Header: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
@@ -57,8 +58,7 @@ const Header: React.FC = () => {
   return (
     <header className="header">
       <div className="header-logo" onClick={() => navigate("/home")}>
-        <img src="/images/logoBranca.png" alt="Logo Domus" className="logo-img" /> 
-        <span>Domus</span>
+        <img src={LogoBranca} alt="Logo Domus" className="logo-img" /> 
       </div>
       <nav className="header-buttons">
         {renderHeaderContent()}
