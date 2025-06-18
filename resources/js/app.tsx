@@ -5,6 +5,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import "./App.css";
 import AppRoutes from "./AppRoutes";
 import { AuthProvider } from "./contexts/AuthContext";
+import { AdsenseProvider } from "./contexts/AdsenseContext";
 import Header from "./components/Header/index";
 import Footer from "./components/Footer/index"; 
 
@@ -117,13 +118,15 @@ const App: React.FC = () => {
     return (
         <Router>
             <AuthProvider>
-                <div className="app-container">
-                    <Header />
-                    <main className="app-main">
-                        <AppRoutes />
-                    </main>
-                    <Footer />
-                </div>
+                <AdsenseProvider>
+                    <div className="app-container">
+                        <Header />
+                        <main className="app-main">
+                            <AppRoutes />
+                        </main>
+                        <Footer />
+                    </div>
+                </AdsenseProvider>
             </AuthProvider>
         </Router>
     );

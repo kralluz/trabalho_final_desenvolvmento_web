@@ -1,50 +1,45 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, ReactNode } from 'react';
+import { User } from '../types';
+import { useAuth } from '../hooks/useAuth';
 
-type User = {
-  email: string;
-  password: string;
-};
-
-type UserData = {
-  email: string;
-  password: string;
-};
-
-type AuthContextType = {
+interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  login: (userData: UserData) => void;
-  logout: () => void;
-};
+  loading: boolean;
+  error: string | null;
+  clearError: () => void;
+  login: (credentials: { email: string; password: string }) => Promise<boolean>;
+  register: (credentials: { name: string; email: string; password: string; role?: 'user' | 'admin' }) => Promise<boolean>;
+  logout: () => Promise<void>;
+  isAuthenticated: () => boolean;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const authHook = useAuth();
 
-  const login = (UserData: User) => {
-    setUser(UserData);
-    setIsAuthenticated(true);
-  };
-
-  const logout = () => {
-    setUser(null);
-  };
+  useEffect(() => {
+    // Verificar se o usuário está autenticado ao carregar a aplicação
+    if (authHook.user === null && localStorage.getItem('auth_token')) {
+      authHook.getCurrentUser();
+    }
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout }}>
+    <AuthContext.Provider value={authHook}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
+export const useAuthContext = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error("useAuth precisa estar dentro de AuthProvider");
+    throw new Error('useAuthContext must be used within an AuthProvider');
   }
-
   return context;
 };

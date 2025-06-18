@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Adsense;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class AdsenseController extends Controller
 {
@@ -20,10 +21,25 @@ class AdsenseController extends Controller
     {
         $adsenses = Adsense::with('user:id,name,email')->get();
         return response()->json([
-            'sucesso' => true,
-            'dados' => $adsenses,
+            'success' => true,
+            'data' => $adsenses,
             'total' => $adsenses->count(),
-            'mensagem' => 'Lista de anúncios obtida com sucesso'
+            'message' => 'Lista de anúncios obtida com sucesso'
+        ], 200);
+    }
+
+    // Método específico para a página HOME - pública
+    public function home(): JsonResponse
+    {
+        $adsenses = Adsense::with('user:id,name,email')
+                          ->orderBy('created_at', 'desc')
+                          ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $adsenses,
+            'total' => $adsenses->count(),
+            'message' => 'Lista pública de anúncios obtida com sucesso'
         ], 200);
     }
 
@@ -32,144 +48,193 @@ class AdsenseController extends Controller
         $adsense = Adsense::with('user:id,name,email')->find((int)$id);
         if (!$adsense) {
             return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Anúncio não encontrado'
+                'success' => false,
+                'message' => 'Anúncio não encontrado'
             ], 404);
         }
         return response()->json([
-            'sucesso' => true,
-            'dados' => $adsense,
-            'mensagem' => 'Anúncio obtido com sucesso'
+            'success' => true,
+            'data' => $adsense,
+            'message' => 'Anúncio obtido com sucesso'
         ], 200);
     }
 
     public function store(Request $request): JsonResponse
     {
-        $user = $this->user();
-        if (!$user) {
-            return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Não autenticado'
-            ], 401);
-        }
+        try {
+            // Debug: Log dos dados recebidos
+            \Log::info('Dados recebidos no store:', $request->all());
+            
+            $data = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'price' => 'required|numeric|min:0'
+            ]);
 
-        $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0'
-        ]);
-        
-        $adsense = Adsense::create([
-            'title' => $data['title'],
-            'description' => $data['description'],
-            'price' => (float)$data['price'],
-            'user_id' => $user->id
-        ]);
+            // Usar dados do middleware
+            $userId = $request->auth_user_id;
+            
+            $adsense = Adsense::create([
+                'title' => $data['title'],
+                'description' => $data['description'],
+                'price' => (float)$data['price'],
+                'user_id' => $userId
+            ]);
 
-        if (!$adsense) {
+            $adsense->load('user:id,name,email');
+
             return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Falha ao salvar anúncio'
+                'success' => true,
+                'data' => $adsense,
+                'message' => 'Anúncio criado com sucesso'
+            ], 201);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dados de validação inválidos',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno do servidor',
+                'error' => $e->getMessage()
             ], 500);
         }
-
-        $adsense->load('user:id,name,email');
-
-        return response()->json([
-            'sucesso' => true,
-            'dados' => $adsense,
-            'mensagem' => 'Anúncio criado com sucesso'
-        ], 201);
     }
 
     public function update(Request $request, $id): JsonResponse
     {
-        $user = $this->user();
-        if (!$user) {
-            return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Não autenticado'
-            ], 401);
-        }
+        try {
+            $adsense = Adsense::find((int)$id);
+            if (!$adsense) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anúncio não encontrado'
+                ], 404);
+            }
 
-        $adsense = Adsense::find((int)$id);
-        if (!$adsense) {
-            return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Anúncio não encontrado'
-            ], 404);
-        }
+            // Usar dados do middleware (temporariamente sem validação)
+            $userId = $request->auth_user_id;
+            $userRole = $request->auth_user_role;
 
-        // Verificar se o usuário é dono do anúncio ou é admin
-        if ($adsense->user_id != $user->id && $user->role != 'admin') {
-            return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Você não tem permissão para editar este anúncio'
-            ], 403);
-        }
+            // Verificar se o usuário é dono do anúncio ou é admin
+            if ($adsense->user_id != $userId && $userRole != 'admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Você não tem permissão para editar este anúncio'
+                ], 403);
+            }
 
-        $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
-            'price' => 'required|numeric|min:0'
-        ]);
-        
-        $adsense->title = $data['title'];
-        $adsense->description = $data['description'];
-        $adsense->price = (float)$data['price'];
+            $data = $request->validate([
+                'title' => 'required|string|max:255',
+                'description' => 'required|string',
+                'price' => 'required|numeric|min:0'
+            ]);
+            
+            $adsense->update([
+                'title' => $data['title'],
+                'description' => $data['description'],
+                'price' => $data['price']
+            ]);
 
-        if (!$adsense->save()) {
+            $adsense->load('user:id,name,email');
+
             return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Falha ao atualizar anúncio'
+                'success' => true,
+                'data' => $adsense,
+                'message' => 'Anúncio atualizado com sucesso'
+            ], 200);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dados de validação inválidos',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno do servidor',
+                'error' => $e->getMessage()
             ], 500);
         }
+    }
 
-        $adsense->load('user:id,name,email');
+    public function destroy(Request $request, $id): JsonResponse
+    {
+        try {
+            $adsense = Adsense::find((int)$id);
+            if (!$adsense) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anúncio não encontrado'
+                ], 404);
+            }
 
+            // Usar dados do middleware (temporariamente sem validação)
+            $userId = $request->auth_user_id;
+            $userRole = $request->auth_user_role;
+
+            // Verificar se o usuário é dono do anúncio ou é admin
+            if ($adsense->user_id != $userId && $userRole != 'admin') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Você não tem permissão para deletar este anúncio'
+                ], 403);
+            }
+
+            $adsense->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Anúncio deletado com sucesso'
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro interno do servidor',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function myAdsenses(Request $request): JsonResponse
+    {
+        // Pegar o user_id do request (definido pelo middleware)
+        $userId = $request->get('auth_user_id', 1); // Default para usuário 1 se não definido
+        
+        $adsenses = Adsense::with('user:id,name,email')
+                          ->where('user_id', $userId)
+                          ->orderBy('created_at', 'desc')
+                          ->get();
+        
         return response()->json([
-            'sucesso' => true,
-            'dados' => $adsense,
-            'mensagem' => 'Anúncio atualizado com sucesso'
+            'success' => true,
+            'data' => $adsenses,
+            'total' => $adsenses->count(),
+            'message' => 'Lista de meus anúncios obtida com sucesso'
         ], 200);
     }
 
-    public function destroy($id): JsonResponse
+    // Método para dashboard - apenas anúncios do usuário logado
+    public function dashboard(Request $request): JsonResponse
     {
-        $user = $this->user();
-        if (!$user) {
-            return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Não autenticado'
-            ], 401);
-        }
-
-        $adsense = Adsense::find((int)$id);
-        if (!$adsense) {
-            return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Anúncio não encontrado'
-            ], 404);
-        }
-
-        // Verificar se o usuário é dono do anúncio ou é admin
-        if ($adsense->user_id != $user->id && $user->role != 'admin') {
-            return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Você não tem permissão para deletar este anúncio'
-            ], 403);
-        }
-
-        if (!$adsense->delete()) {
-            return response()->json([
-                'sucesso' => false,
-                'mensagem' => 'Falha ao deletar anúncio'
-            ], 500);
-        }
-
+        // Pegar o user_id do request (definido pelo middleware)
+        $userId = $request->get('auth_user_id', 1);
+        
+        $adsenses = Adsense::with('user:id,name,email')
+                          ->where('user_id', $userId)
+                          ->orderBy('created_at', 'desc')
+                          ->get();
+        
         return response()->json([
-            'sucesso' => true,
-            'mensagem' => 'Anúncio deletado com sucesso'
+            'success' => true,
+            'data' => $adsenses,
+            'total' => $adsenses->count(),
+            'message' => 'Dashboard - Lista de meus anúncios obtida com sucesso'
         ], 200);
     }
 }

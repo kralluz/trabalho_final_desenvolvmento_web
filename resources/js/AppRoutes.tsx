@@ -11,9 +11,10 @@ const AppRoutes: React.FC = () => {
   return (
     <Routes>
     <Route path="/" element={<MainLayout />}>
+      <Route index element={<Home />} /> {/* Rota raiz / redireciona para Home */}
+      <Route path="/home" element={<Home />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
-      <Route path="/home" element={<Home />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="*" element={<NotFound />} />

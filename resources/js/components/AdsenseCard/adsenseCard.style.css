@@ -1,0 +1,109 @@
+.adsense-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  margin: 16px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.adsense-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.adsense-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.adsense-card-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  flex: 1;
+  margin-right: 12px;
+}
+
+.adsense-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.adsense-card-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
+}
+
+.adsense-card-btn:hover {
+  background-color: #f5f5f5;
+}
+
+.edit-btn:hover {
+  background-color: #e3f2fd;
+}
+
+.delete-btn:hover {
+  background-color: #ffebee;
+}
+
+.adsense-card-description {
+  color: #666;
+  line-height: 1.5;
+  margin: 12px 0;
+  font-size: 0.95rem;
+}
+
+.adsense-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.adsense-card-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2e7d32;
+  margin: 0;
+}
+
+.adsense-card-date {
+  font-size: 0.85rem;
+  color: #999;
+  margin: 0;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .adsense-card {
+    margin: 12px 0;
+    padding: 16px;
+  }
+  
+  .adsense-card-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .adsense-card-actions {
+    align-self: flex-end;
+  }
+  
+  .adsense-card-footer {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+}

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\AdsenseController;
+use App\Http\Controllers\Auth\ImageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,133 +20,135 @@ use App\Http\Controllers\Auth\AdsenseController;
 |
 */
 
-// Rotas de saúde e documentação
+// Rota de saúde da aplicação
 Route::get('/health', function () {
     return response()->json([
-        'status' => 'ok',
-        'message' => 'Application is running',
-        'timestamp' => now()->toISOString(),
-        'version' => app()->version(),
-        'environment' => app()->environment(),
+        'success' => true,
+        'data' => [
+            'status' => 'ok',
+            'message' => 'Application is running',
+            'timestamp' => now()->toISOString(),
+            'version' => app()->version(),
+            'environment' => app()->environment(),
+        ],
+        'message' => 'Aplicação funcionando corretamente'
     ]);
 });
 
+// Documentação da API
 Route::get('/docs', function () {
     return response()->json([
-        'titulo' => 'Documentação da API Trabvirso',
-        'versao' => '1.0.0',
-        'descricao' => 'Endpoints da API da aplicação Trabvirso',
-        'url_base' => url('/api'),
-        'endpoints' => [
-            [
-                'metodo' => 'GET',
-                'caminho' => '/api/health',
-                'descricao' => 'Verifica o status de saúde da aplicação',
-                'parametros' => [],
-                'exemplo_resposta' => [
-                    'status' => 'ok',
-                    'message' => 'Application is running',
-                    'timestamp' => '2025-06-06T00:46:49.956105Z',
-                    'version' => '12.8.0',
-                    'environment' => 'local'
-                ]
-            ],
-            [
-                'metodo' => 'POST',
-                'caminho' => '/api/auth/login',
-                'descricao' => 'Realiza login do usuário',
-                'parametros' => [
-                    'email' => 'string (obrigatório, formato email)',
-                    'password' => 'string (obrigatório)'
+        'success' => true,
+        'data' => [
+            'titulo' => 'Documentação da API Trabvirso',
+            'versao' => '1.0.0',
+            'descricao' => 'Endpoints da API da aplicação Trabvirso',
+            'url_base' => url('/api'),
+            'endpoints' => [
+                [
+                    'metodo' => 'GET',
+                    'caminho' => '/api/health',
+                    'descricao' => 'Verifica o status de saúde da aplicação'
                 ],
-                'exemplo_requisicao' => [
-                    'email' => 'usuario@exemplo.com',
-                    'password' => 'senha123'
+                [
+                    'metodo' => 'POST',
+                    'caminho' => '/api/auth/register',
+                    'descricao' => 'Registra um novo usuário',
+                    'parametros' => [
+                        'name' => 'string (obrigatório)',
+                        'email' => 'string (obrigatório, formato email)',
+                        'password' => 'string (obrigatório, mín 6 caracteres)',
+                        'role' => 'string (opcional: user, admin)'
+                    ]
                 ],
-                'exemplo_resposta' => [
-                    'sucesso' => true,
-                    'dados' => [
-                        'usuario' => [
-                            'id' => 1,
-                            'name' => 'João Silva',
-                            'email' => 'joao@exemplo.com',
-                            'role' => 'user'
-                        ],
-                        'token' => 'eyJhbGciOiJIUzI1NiIs...',
-                        'tipo_token' => 'Bearer'
-                    ],
-                    'mensagem' => 'Login realizado com sucesso'
-                ]
-            ],
-            [
-                'metodo' => 'GET',
-                'caminho' => '/api/adsense',
-                'descricao' => 'Lista todos os anúncios',
-                'parametros' => [],
-                'exemplo_resposta' => [
-                    'sucesso' => true,
-                    'dados' => [
-                        [
-                            'id' => 1,
-                            'title' => 'Vendo carro',
-                            'description' => 'Carro em ótimo estado',
-                            'price' => 15000.00,
-                            'user_id' => 1,
-                            'created_at' => '2025-06-06T00:00:00Z'
-                        ]
-                    ],
-                    'total' => 1,
-                    'mensagem' => 'Lista de anúncios obtida com sucesso'
-                ]
-            ],
-            [
-                'metodo' => 'POST',
-                'caminho' => '/api/adsense',
-                'descricao' => 'Cria um novo anúncio',
-                'autenticacao' => 'Token Bearer obrigatório',
-                'parametros' => [
-                    'title' => 'string (obrigatório, máx 255 caracteres)',
-                    'description' => 'string (obrigatório)',
-                    'price' => 'number (obrigatório)'
+                [
+                    'metodo' => 'POST',
+                    'caminho' => '/api/auth/login',
+                    'descricao' => 'Realiza login do usuário',
+                    'parametros' => [
+                        'email' => 'string (obrigatório)',
+                        'password' => 'string (obrigatório)'
+                    ]
                 ],
-                'exemplo_requisicao' => [
-                    'title' => 'Vendo notebook',
-                    'description' => 'Notebook Dell em perfeito estado',
-                    'price' => 2500.00
+                [
+                    'metodo' => 'POST',
+                    'caminho' => '/api/auth/logout',
+                    'descricao' => 'Realiza logout do usuário'
+                ],
+                [
+                    'metodo' => 'GET',
+                    'caminho' => '/api/auth/me',
+                    'descricao' => 'Retorna dados do usuário autenticado'
+                ],
+                [
+                    'metodo' => 'GET',
+                    'caminho' => '/api/users',
+                    'descricao' => 'Lista todos os usuários'
+                ],
+                [
+                    'metodo' => 'GET',
+                    'caminho' => '/api/adsense/home',
+                    'descricao' => 'Lista todos os anúncios - Página HOME (pública)'
+                ],
+                [
+                    'metodo' => 'GET',
+                    'caminho' => '/api/adsense/my/dashboard',
+                    'descricao' => 'Lista anúncios do usuário logado - Dashboard (autenticado)',
+                    'requer_auth' => true
+                ],
+                [
+                    'metodo' => 'GET',
+                    'caminho' => '/api/adsense/{id}',
+                    'descricao' => 'Exibe um anúncio específico (público)'
+                ],
+                [
+                    'metodo' => 'POST',
+                    'caminho' => '/api/adsense',
+                    'descricao' => 'Cria um novo anúncio (autenticado)',
+                    'requer_auth' => true,
+                    'parametros' => [
+                        'title' => 'string (obrigatório)',
+                        'description' => 'string (obrigatório)',
+                        'price' => 'numeric (obrigatório, min:0)'
+                    ]
+                ],
+                [
+                    'metodo' => 'PUT',
+                    'caminho' => '/api/adsense/{id}',
+                    'descricao' => 'Atualiza um anúncio (autenticado - apenas dono ou admin)',
+                    'requer_auth' => true
+                ],
+                [
+                    'metodo' => 'DELETE',
+                    'caminho' => '/api/adsense/{id}',
+                    'descricao' => 'Remove um anúncio (autenticado - apenas dono ou admin)',
+                    'requer_auth' => true
                 ]
             ]
         ],
-        'autenticacao' => [
-            'tipo' => 'Bearer Token',
-            'descricao' => 'Alguns endpoints requerem autenticação usando tokens Bearer',
-            'como_autenticar' => [
-                '1. Faça login através do endpoint /api/auth/login',
-                '2. Use o token retornado no cabeçalho Authorization',
-                '3. Formato: Authorization: Bearer {seu-token}'
-            ]
-        ],
-        'respostas_comuns' => [
-            '200' => 'Sucesso',
-            '201' => 'Criado com sucesso',
-            '401' => 'Não autenticado',
-            '403' => 'Acesso negado',
-            '404' => 'Não encontrado',
-            '422' => 'Erro de validação',
-            '500' => 'Erro do servidor'
-        ],
+        'message' => 'Documentação obtida com sucesso',
         'gerado_em' => now()->toISOString()
     ]);
 });
 
-// Rota de teste para listar usuários
+// Rota para listar usuários
 Route::get('/users', function () {
     try {
-        $users = DB::table('users')->select('id', 'name', 'email', 'created_at')->get();
-        return response()->json($users);
+        $users = DB::table('users')
+            ->select('id', 'name', 'email', 'role', 'created_at')
+            ->get();
+            
+        return response()->json([
+            'success' => true,
+            'data' => $users,
+            'total' => $users->count(),
+            'message' => 'Lista de usuários obtida com sucesso'
+        ]);
     } catch (\Exception $e) {
         return response()->json([
-            'error' => 'Erro ao buscar usuários',
-            'message' => $e->getMessage()
+            'success' => false,
+            'message' => 'Erro ao buscar usuários',
+            'error' => $e->getMessage()
         ], 500);
     }
 });
@@ -158,77 +161,34 @@ Route::prefix('auth')->group(function () {
     Route::get('/me', [AuthController::class, 'me']);
 });
 
-// Rotas de usuários (mantendo compatibilidade)
-Route::get('/usuarios', function () {
-    try {
-        $usuarios = DB::table('users')
-            ->select('id', 'name as nome', 'email', 'role', 'created_at as criado_em', 'updated_at as atualizado_em')
-            ->get();
-
-        return response()->json([
-            'sucesso' => true,
-            'dados' => $usuarios,
-            'total' => $usuarios->count(),
-            'mensagem' => 'Lista de usuários obtida com sucesso'
-        ]);
-    } catch (Exception $e) {
-        return response()->json([
-            'sucesso' => false,
-            'mensagem' => 'Erro ao obter usuários: ' . $e->getMessage()
-        ], 500);
-    }
-});
-
-Route::post('/usuarios', function (Request $request) {
-    try {
-        // Validação
-        $dados = $request->validate([
-            'nome' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users,email',
-            'senha' => 'required|string|min:6',
-            'role' => 'sometimes|string|in:user,admin'
-        ]);
-
-        // Criar usuário no banco
-        $userId = DB::table('users')->insertGetId([
-            'name' => $dados['nome'],
-            'email' => $dados['email'],
-            'password' => Hash::make($dados['senha']),
-            'role' => $dados['role'] ?? 'user',
-            'created_at' => now(),
-            'updated_at' => now()
-        ]);
-
-        // Buscar o usuário criado
-        $usuario = DB::table('users')
-            ->select('id', 'name as nome', 'email', 'role', 'created_at as criado_em', 'updated_at as atualizado_em')
-            ->where('id', $userId)
-            ->first();
-
-        return response()->json([
-            'sucesso' => true,
-            'dados' => $usuario,
-            'mensagem' => 'Usuário criado com sucesso'
-        ], 201);
-    } catch (ValidationException $e) {
-        return response()->json([
-            'sucesso' => false,
-            'mensagem' => 'Dados inválidos',
-            'erros' => $e->errors()
-        ], 422);
-    } catch (Exception $e) {
-        return response()->json([
-            'sucesso' => false,
-            'mensagem' => 'Erro ao criar usuário: ' . $e->getMessage()
-        ], 500);
-    }
-});
-
-// CRUD de Adsense - usando Controller
+// CRUD de Adsense
 Route::prefix('adsense')->group(function () {
-    Route::get('/', [AdsenseController::class, 'index']);
-    Route::get('/{id}', [AdsenseController::class, 'show']);
-    Route::post('/', [AdsenseController::class, 'store']);
-    Route::put('/{id}', [AdsenseController::class, 'update']);
-    Route::delete('/{id}', [AdsenseController::class, 'destroy']);
+    // Rotas públicas (sem autenticação)
+    Route::get('/home', [AdsenseController::class, 'home']); // Página HOME - todas as adsenses
+    Route::get('/', [AdsenseController::class, 'index']); // Compatibilidade - listar anúncios
+    
+    // Rotas protegidas por autenticação
+    Route::middleware('auth.token')->group(function () {
+        Route::get('/my/dashboard', [AdsenseController::class, 'dashboard']); // Dashboard - apenas meus anúncios
+        Route::get('/my', [AdsenseController::class, 'myAdsenses']); // Compatibilidade - meus anúncios
+        Route::post('/', [AdsenseController::class, 'store']);
+        Route::put('/{id}', [AdsenseController::class, 'update']);
+        Route::delete('/{id}', [AdsenseController::class, 'destroy']);
+    });
+    
+    // Rota com parâmetro deve ficar por último
+    Route::get('/{id}', [AdsenseController::class, 'show']); // Ver anúncio específico
+});
+
+// CRUD de Images
+Route::prefix('images')->group(function () {
+    Route::get('/', [ImageController::class, 'index']); // Público - listar imagens
+    Route::get('/{id}', [ImageController::class, 'show']); // Público - ver imagem
+    
+    // Rotas protegidas por autenticação
+    Route::middleware('auth.token')->group(function () {
+        Route::post('/', [ImageController::class, 'store']);
+        Route::put('/{id}', [ImageController::class, 'update']);
+        Route::delete('/{id}', [ImageController::class, 'destroy']);
+    });
 });
