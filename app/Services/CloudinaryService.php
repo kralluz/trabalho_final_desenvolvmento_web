@@ -5,6 +5,7 @@ namespace App\Services;
 use Cloudinary\Cloudinary;
 use Cloudinary\Configuration\Configuration;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 
 class CloudinaryService
 {
@@ -29,36 +30,43 @@ class CloudinaryService
      *
      * @param UploadedFile|string $file File to upload (can be a path or an UploadedFile instance)
      * @param string|null $publicId Optional custom public ID
+     * @param array $options Additional upload options
      * @return array Upload result with URL and other info
      */
-    public function uploadImage($file, $publicId = null)
+    public function uploadImage($file, $publicId = null, array $options = [])
     {
-        $uploadOptions = [
-            'folder' => config('cloudinary.folder'),
-            'overwrite' => true,
-        ];
+        try {
+            $uploadOptions = array_merge([
+                'folder' => config('cloudinary.folder'),
+                'overwrite' => true,
+                'resource_type' => 'image',
+            ], $options);
 
-        if ($publicId) {
-            $uploadOptions['public_id'] = $publicId;
+            if ($publicId) {
+                $uploadOptions['public_id'] = $publicId;
+            }
+
+            // Handle both UploadedFile instances and file paths
+            $filePath = ($file instanceof UploadedFile) ? $file->getRealPath() : $file;
+
+            // Upload the file to Cloudinary
+            $result = $this->cloudinary->uploadApi()->upload(
+                $filePath,
+                $uploadOptions
+            );
+
+            return [
+                'public_id' => $result['public_id'],
+                'url' => $result['secure_url'],
+                'format' => $result['format'],
+                'width' => $result['width'],
+                'height' => $result['height'],
+                'bytes' => $result['bytes'],
+            ];
+        } catch (\Exception $e) {
+            Log::error('Cloudinary upload error: ' . $e->getMessage());
+            throw $e;
         }
-
-        // Handle both UploadedFile instances and file paths
-        $filePath = ($file instanceof UploadedFile) ? $file->getRealPath() : $file;
-
-        // Upload the file to Cloudinary
-        $result = $this->cloudinary->uploadApi()->upload(
-            $filePath,
-            $uploadOptions
-        );
-
-        return [
-            'public_id' => $result['public_id'],
-            'url' => $result['secure_url'],
-            'format' => $result['format'],
-            'width' => $result['width'],
-            'height' => $result['height'],
-            'bytes' => $result['bytes'],
-        ];
     }
 
     /**
@@ -69,19 +77,45 @@ class CloudinaryService
      */
     public function deleteImage($publicId)
     {
-        return $this->cloudinary->uploadApi()->destroy($publicId);
+        try {
+            return $this->cloudinary->uploadApi()->destroy($publicId, [
+                'resource_type' => 'image'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Cloudinary delete error: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
-     * Get an image URL from Cloudinary.
+     * Get an image URL from Cloudinary with optional transformations.
      * 
      * @param string $publicId Public ID of the image
-     * @param array $options Transformation options
+     * @param array $transformations Transformation options
      * @return string Image URL
      */
-    public function getImageUrl($publicId, array $options = [])
+    public function getImageUrl($publicId, array $transformations = [])
     {
         return $this->cloudinary->image($publicId)
-            ->toUrl($options);
+            ->toUrl($transformations);
     }
-} 
+
+    /**
+     * Get details about an image from Cloudinary.
+     * 
+     * @param string $publicId Public ID of the image
+     * @return array Image details
+     */
+    public function getImageInfo($publicId)
+    {
+        try {
+            return $this->cloudinary->adminApi()->asset($publicId, [
+                'resource_type' => 'image'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Cloudinary get image info error: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+    }
+}

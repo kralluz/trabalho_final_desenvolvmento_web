@@ -8,20 +8,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Models\Image;
 use App\Models\User;
-// use App\Services\CloudinaryService; // Temporariamente comentado para testes
+use App\Services\CloudinaryService;
 
 class ImageController extends Controller
 {
-    // protected $cloudinaryService; // Temporariamente comentado para testes
+    protected $cloudinaryService;
 
-    // public function __construct(CloudinaryService $cloudinaryService)
-    // {
-    //     $this->cloudinaryService = $cloudinaryService;
-    // }
-
-    public function __construct()
+    public function __construct(CloudinaryService $cloudinaryService)
     {
-        // Construtor vazio para testes
+        $this->cloudinaryService = $cloudinaryService;
     }
 
     private function user()
@@ -65,18 +60,13 @@ class ImageController extends Controller
                 'image' => 'required|image|max:10240' // Max 10MB
             ]);
             
-            // Simulação de upload (sem Cloudinary para testes)
+            // Upload to Cloudinary
             $file = $request->file('image');
-            $uploadResult = [
-                'url' => 'https://example.com/test-image.jpg',
-                'public_id' => 'test_' . time(),
-                'format' => $file->getClientOriginalExtension(),
-                'width' => 800,
-                'height' => 600,
-                'bytes' => $file->getSize()
-            ];
+            $uploadResult = $this->cloudinaryService->uploadImage($file, null, [
+                'folder' => config('cloudinary.folder') . '/' . $data['adsense_id']
+            ]);
             
-            // Salvar metadados no banco de dados
+            // Save metadata to database
             $image = Image::create([
                 'adsense_id' => $data['adsense_id'],
                 'url' => $uploadResult['url'],
@@ -163,13 +153,12 @@ class ImageController extends Controller
                 ], 404);
             }
 
-            // Simulação de remoção (sem Cloudinary para testes)
+            // Delete from Cloudinary if public_id exists
             if ($image->public_id) {
-                // Aqui normalmente deletaríamos do Cloudinary
-                Log::info('Simulando delete do Cloudinary para public_id: ' . $image->public_id);
+                $this->cloudinaryService->deleteImage($image->public_id);
             }
             
-            // Remover o registro do banco de dados
+            // Remove the database record
             $image->delete();
 
             return response()->json([
