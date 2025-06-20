@@ -16,14 +16,36 @@ class AuthToken
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Por enquanto, deixar passar tudo sem validação
-        // TODO: Implementar validação de token depois
+        $authHeader = $request->header('Authorization');
         
-        // Simular usuário logado para os testes funcionarem
+        if (!$authHeader || strpos($authHeader, 'Bearer ') !== 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token de autorização necessário'
+            ], 401);
+        }
+
+        $token = substr($authHeader, 7);
+        $user = User::where('api_token', $token)->first();
+        
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token inválido ou expirado'
+            ], 401);
+        }
+
+        // Adicionar dados do usuário ao request
         $request->merge([
-            'auth_user_id' => 1, // Maria Silva
-            'auth_user_role' => 'user'
+            'auth_user_id' => $user->id,
+            'auth_user_role' => $user->role,
+            'auth_user' => $user
         ]);
+
+        // Injetar o usuário no request para compatibilidade com $request->user()
+        $request->setUserResolver(function () use ($user) {
+            return $user;
+        });
 
         return $next($request);
     }

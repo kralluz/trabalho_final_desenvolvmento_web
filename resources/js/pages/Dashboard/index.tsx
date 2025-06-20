@@ -14,14 +14,18 @@ const Dashboard: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
     const [cards, setCards] = useState<CardItem[]>([]);
     const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const fetchCards = async () => {
             try {
+                setLoading(true);
                 const data = await getMyAdsenses();
                 setCards(data);
             } catch (err) {
                 console.error(err);
+            } finally {
+                setLoading(false);
             }
         };
         fetchCards();
@@ -97,7 +101,14 @@ const Dashboard: React.FC = () => {
             </header>
 
             <div className="dashboard-cards">
-                <PostList cards={cards} onEdit={handleEdit} onDelete={handleDelete} showActions />
+                {loading ? (
+                    <div className="loading-message">
+                        <div className="loading-spinner"></div>
+                        <p>Carregando seus anúncios...</p>
+                    </div>
+                ) : (
+                    <PostList cards={cards} onEdit={handleEdit} onDelete={handleDelete} showActions />
+                )}
             </div>
 
             {/* Modal de Criação */}
