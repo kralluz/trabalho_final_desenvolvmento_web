@@ -68,9 +68,7 @@ class AdsenseController extends Controller
             'data' => $adsense,
             'message' => 'Anúncio obtido com sucesso'
         ], 200);
-    }
-
-    public function store(Request $request): JsonResponse
+    }    public function store(Request $request): JsonResponse
     {
         try {
             $data = $request->validate([
@@ -82,6 +80,13 @@ class AdsenseController extends Controller
 
             $userId = $request->auth_user_id;
             
+            if (is_null($userId)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Usuário não autenticado'
+                ], 401);
+            }
+
             $adsense = Adsense::create([
                 'title' => $data['title'],
                 'description' => $data['description'],
@@ -110,8 +115,7 @@ class AdsenseController extends Controller
                 'success' => false,
                 'message' => 'Dados de validação inválidos',
                 'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
+            ], 422);        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Erro interno do servidor',
@@ -176,12 +180,21 @@ class AdsenseController extends Controller
             ], 200);
 
         } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Validation failed for Adsense update', [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Dados de validação inválidos',
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
+            Log::error('Error updating Adsense', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request_data' => $request->all()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Erro interno do servidor',
@@ -222,18 +235,26 @@ class AdsenseController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
+            Log::error('Error deleting Adsense', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Erro interno do servidor',
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
-
-    public function myAdsenses(Request $request): JsonResponse
+    }    public function myAdsenses(Request $request): JsonResponse
     {
-        // Pegar o user_id do request (definido pelo middleware)
-        $userId = $request->get('auth_user_id', 1); // Default para usuário 1 se não definido
+        $userId = $request->auth_user_id;
+        
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuário não autenticado'
+            ], 401);
+        }
         
         $adsenses = Adsense::with(['user:id,name,email','images'])
                           ->where('user_id', $userId)
@@ -250,13 +271,17 @@ class AdsenseController extends Controller
             'total' => $adsenses->count(),
             'message' => 'Lista de meus anúncios obtida com sucesso'
         ], 200);
-    }
-
-    // Método para dashboard - apenas anúncios do usuário logado
+    }    // Método para dashboard - apenas anúncios do usuário logado
     public function dashboard(Request $request): JsonResponse
     {
-        // Pegar o user_id do request (definido pelo middleware)
-        $userId = $request->get('auth_user_id', 1);
+        $userId = $request->auth_user_id;
+        
+        if (!$userId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Usuário não autenticado'
+            ], 401);
+        }
         
         $adsenses = Adsense::with(['user:id,name,email','images'])
                           ->where('user_id', $userId)

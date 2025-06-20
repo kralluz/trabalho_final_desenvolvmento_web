@@ -13,11 +13,11 @@ class Image extends Model
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
-     */
-    protected $fillable = [
+     */    protected $fillable = [
         'url',
         'path',
-        'metadata'
+        'metadata',
+        'adsense_id'
     ];
 
     /**
@@ -27,23 +27,10 @@ class Image extends Model
      */
     protected $casts = [
         'metadata' => 'array'
-    ];
-
-    /**
+    ];    /**
      * Get the adsense that owns the image.
      */
-    public function adsenses()
+    public function adsense()
     {
-        return $this->belongsToMany(Adsense::class);
-    }
-
-    protected static function boot()
-    {
-        parent::boot();
-
-        static::deleting(function ($image) {
-            // Delete related records in pivot table
-            $image->adsenses()->detach();
-        });
-    }
-}
+        return $this->belongsTo(Adsense::class);
+    }}

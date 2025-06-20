@@ -28,6 +28,43 @@ The Laravel + React starter kit is open-sourced software licensed under the MIT 
 
 Este projeto demonstra como usar React Router DOM com Laravel e Inertia.js, mantendo o Inertia.js apenas como fachada para a camada de servidor.
 
+## Installation
+
+1. **Clone o repositório:**
+```bash
+git clone <repository-url>
+cd trabvirso
+```
+
+2. **Instale as dependências:**
+```bash
+composer install
+npm install
+```
+
+3. **Configure o ambiente:**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+4. **Configure o banco de dados:**
+```bash
+php artisan migrate
+```
+
+5. **Compile os assets:**
+```bash
+npm run dev
+```
+
+6. **Inicie o servidor:**
+```bash
+php artisan serve
+```
+
+**📝 NOTA:** O banco iniciará vazio. Você pode criar sua conta pelo frontend e começar a usar a aplicação normalmente.
+
 ## Tecnologias utilizadas
 
 - Laravel 12.8.0
@@ -140,7 +177,7 @@ O projeto inclui vários scripts úteis no `package.json`:
 |---------|-----------|
 | `npm run setup` | Instalação completa (dependências + banco de dados) |
 | `npm run prepare-db` | Cria o banco de dados SQLite e executa migrações |
-| `npm run reset-db` | Reseta o banco de dados (apaga tudo e recria com seeds) |
+| `npm run reset-db` | Reseta o banco de dados (apaga tudo e recria) |
 | `npm run start` | Inicia o servidor Laravel e Vite em paralelo |
 | `npm run serve` | Inicia apenas o servidor Laravel |
 | `npm run dev` | Inicia apenas o servidor Vite |

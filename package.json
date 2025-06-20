@@ -18,10 +18,10 @@
         "clear": "php artisan cache:clear ; php artisan config:clear ; php artisan view:clear ; php artisan route:clear",
         "prepare-db": "touch database/database.sqlite && php artisan migrate",
         "setup": "composer install && npm install && npm run prepare-db",
-        "reset-db": "php artisan migrate:fresh --seed",
+        "reset-db": "php artisan migrate:fresh",
         "check-migrations": "php artisan migrate:status",
         "migrate": "php artisan migrate",
-        "migrate-fresh": "php artisan migrate:fresh --seed"
+        "migrate-fresh": "php artisan migrate:fresh"
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
