@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { CreateAdsenseRequest, Adsense } from "../../services/api";
+import { CreateAdsenseRequest, Adsense } from "../../types";
+import cloudinaryService from "../../services/cloudinaryService";
 import "./adsenseForm.style.css";
 
 interface AdsenseFormProps {
@@ -21,6 +22,10 @@ const AdsenseForm: React.FC<AdsenseFormProps> = ({
     price: 0,
   });
 
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -30,8 +35,77 @@ const AdsenseForm: React.FC<AdsenseFormProps> = ({
         description: initialData.description,
         price: initialData.price,
       });
+      if (initialData.images?.[0]?.url) {
+        setImagePreview(initialData.images[0].url);
+      }
     }
   }, [initialData]);
+
+  const validateImage = (file: File): boolean => {
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError("A imagem deve ter no máximo 5MB");
+      return false;
+    }
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError("Apenas imagens JPG, PNG e GIF são permitidas");
+      return false;
+    }
+
+    return true;
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (validateImage(file)) {
+        setSelectedImage(file);
+        setImagePreview(URL.createObjectURL(file));
+        setUploadError(null);
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrors({});
+    setUploadError(null);
+
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      let imageUrl = initialData?.images?.[0]?.url || "";
+
+      if (selectedImage) {
+        const uploadResult = await cloudinaryService.uploadImage(selectedImage);
+        imageUrl = uploadResult.secure_url;
+      }
+
+      const success = await onSubmit({
+        ...formData,
+        image_url: imageUrl,
+      });
+
+      if (success && !initialData) {
+        // Reset form only for new adsense
+        setFormData({ title: "", description: "", price: 0 });
+        setSelectedImage(null);
+        setImagePreview(null);
+      }
+    } catch (error) {
+      setUploadError("Erro ao fazer upload da imagem. Tente novamente.");
+      console.error("Upload error:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -47,24 +121,12 @@ const AdsenseForm: React.FC<AdsenseFormProps> = ({
       newErrors.price = "Preço deve ser maior que zero";
     }
 
+    if (!selectedImage && !initialData?.images?.[0]?.url) {
+      newErrors.image = "Imagem é obrigatória";
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
-
-    const success = await onSubmit(formData);
-    if (success) {
-      // Reset form if it's a new adsense (not editing)
-      if (!initialData) {
-        setFormData({ title: "", description: "", price: 0 });
-      }
-    }
   };
 
   const handleChange = (
@@ -74,7 +136,9 @@ const AdsenseForm: React.FC<AdsenseFormProps> = ({
     setFormData(prev => ({
       ...prev,
       [name]: name === "price" ? parseFloat(value) || 0 : value,
-    }));    // Clear error when user starts typing
+    }));
+
+    // Clear error when user starts typing
     if (errors[name as keyof CreateAdsenseRequest]) {
       setErrors(prev => {
         const newErrors = { ...prev };
@@ -100,10 +164,9 @@ const AdsenseForm: React.FC<AdsenseFormProps> = ({
             id="title"
             name="title"
             value={formData.title}
-            onChange={handleChange}
+            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
             className={`form-input ${errors.title ? "error" : ""}`}
-            placeholder="Digite o título do anúncio"
-            disabled={isLoading}
+            disabled={isLoading || isUploading}
           />
           {errors.title && <span className="error-message">{errors.title}</span>}
         </div>
@@ -116,51 +179,74 @@ const AdsenseForm: React.FC<AdsenseFormProps> = ({
             id="description"
             name="description"
             value={formData.description}
-            onChange={handleChange}
-            className={`form-textarea ${errors.description ? "error" : ""}`}
-            placeholder="Descreva seu anúncio"
-            rows={4}
-            disabled={isLoading}
+            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            className={`form-input ${errors.description ? "error" : ""}`}
+            disabled={isLoading || isUploading}
           />
-          {errors.description && (
-            <span className="error-message">{errors.description}</span>
-          )}
+          {errors.description && <span className="error-message">{errors.description}</span>}
         </div>
 
         <div className="form-group">
           <label htmlFor="price" className="form-label">
-            Preço (R$) *
+            Preço *
           </label>
           <input
             type="number"
             id="price"
             name="price"
             value={formData.price}
-            onChange={handleChange}
+            onChange={(e) => setFormData(prev => ({ ...prev, price: Number(e.target.value) }))}
             className={`form-input ${errors.price ? "error" : ""}`}
-            placeholder="0.00"
             min="0"
             step="0.01"
-            disabled={isLoading}
+            disabled={isLoading || isUploading}
           />
           {errors.price && <span className="error-message">{errors.price}</span>}
         </div>
 
+        <div className="form-group">
+          <label htmlFor="image" className="form-label">
+            Imagem * {isUploading && <span className="upload-status">(Enviando...)</span>}
+          </label>
+          <input
+            type="file"
+            id="image"
+            name="image"
+            accept="image/jpeg,image/png,image/gif"
+            onChange={handleImageChange}
+            className={`form-input ${errors.image ? "error" : ""}`}
+            disabled={isLoading || isUploading}
+          />
+          {imagePreview && (
+            <div className="image-preview">
+              <img src={imagePreview} alt="Preview" style={{ maxWidth: '200px', marginTop: '10px' }} />
+            </div>
+          )}
+          {errors.image && <span className="error-message">{errors.image}</span>}
+          {uploadError && <span className="error-message">{uploadError}</span>}
+        </div>
+
         <div className="form-actions">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="btn btn-secondary"
-            disabled={isLoading}
-          >
-            Cancelar
-          </button>
           <button
             type="submit"
             className="btn btn-primary"
-            disabled={isLoading}
+            disabled={isLoading || isUploading}
           >
-            {isLoading ? "Salvando..." : initialData ? "Atualizar" : "Criar"}
+            {isLoading || isUploading ? (
+              "Salvando..."
+            ) : initialData ? (
+              "Atualizar Anúncio"
+            ) : (
+              "Criar Anúncio"
+            )}
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onCancel}
+            disabled={isLoading || isUploading}
+          >
+            Cancelar
           </button>
         </div>
       </form>

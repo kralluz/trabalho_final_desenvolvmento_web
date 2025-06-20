@@ -45,12 +45,22 @@ const Header: React.FC = () => {
       );
     }
 
+    if (path.pathname === "/dashboard" || path.pathname === "/admin" || path.pathname === "/home" || path.pathname === "/AdminDashboard") {
+      return (
+        <button className="header-button secondary" onClick={() => navigate("/login")}>
+          Sair da Sessão
+        </button>
+      );
+    }
+
+
     return (
       <>
         <button className="header-button" onClick={() => navigate("/login")}>Iniciar Sessão</button>
         <button className="header-button" onClick={() => navigate("/dashboard")}>Dashboard</button>
         <button className="header-button" onClick={() => navigate("/admin")}>Admin</button>
         <button className="header-button secondary" onClick={() => navigate("/home")}>Home</button>
+        <button className="header-button secondary" onClick={() => navigate("/AdminDashboard")}>AdminDashboard</button>
       </>
     );
   };

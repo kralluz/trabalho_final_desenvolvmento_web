@@ -1,71 +1,53 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiService, RegisterRequest } from "../../services/api";
-import "./registerform.style.css";
+import "./registerform.style.css"; // Arquivo de CSS novo!
+import { useAuth } from "../../contexts/AuthContext";
 
 type FormValues = {
-  name: string;
+  nome: string;
   email: string;
-  password: string;
+  senha: string;
 };
 
 const RegisterForm: React.FC = () => {
   const [formValues, setFormValues] = useState<FormValues>({
-    name: "",
+    nome: "",
     email: "",
-    password: "",
+    senha: "",
   });
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { register, loading, error, clearError } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setError(null);
 
-    if (!formValues.name || !formValues.email || !formValues.password) {
-      setError("Todos os campos são obrigatórios");
+    // Clear previous errors
+    clearError();
+
+    if (
+      !formValues.nome.trim() ||
+      !formValues.email.trim() ||
+      !formValues.senha.trim()
+    ) {
+      alert("Todos os campos são obrigatórios");
       return;
     }
-
-    if (formValues.password.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres");
-      return;
-    }
-
-    setLoading(true);
 
     try {
-      const registerData: RegisterRequest = {
-        name: formValues.name,
+      const success = await register({
+        name: formValues.nome,
         email: formValues.email,
-        password: formValues.password,
-        role: "user", // Padrão como usuário comum
-      };
-
-      const response = await apiService.register(registerData);
-
-      if (response.success) {
-        alert(`Usuário criado com sucesso! Bem-vindo, ${response.data?.user.name}!`);
-        
-        // Limpar formulário
-        setFormValues({
-          name: "",
-          email: "",
-          password: "",
-        });
-
-        // Navegar para login
+        password: formValues.senha,
+        role: "user",
+      });
+      if (success) {
+        // Reset form
+        setFormValues({ nome: "", email: "", senha: "" });
         navigate("/login");
-      } else {
-        setError(response.message || "Erro ao criar usuário");
       }
-    } catch (error: any) {
-      console.error("Erro no registro:", error);
-      setError(error.message || "Erro interno do servidor");
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error("Registration error:", err);
     }
   };
 
@@ -73,8 +55,16 @@ const RegisterForm: React.FC = () => {
     <form className="register-form" onSubmit={handleSubmit}>
       <h2 className="form-title">Criar uma conta</h2>
 
+      {/* Display auth error */}
       {error && (
-        <div style={{ color: 'red', marginBottom: '10px', textAlign: 'center' }}>
+        <div
+          className="error-message"
+          style={{
+            color: "red",
+            marginBottom: "1rem",
+            textAlign: "center",
+          }}
+        >
           {error}
         </div>
       )}
@@ -83,8 +73,11 @@ const RegisterForm: React.FC = () => {
         className="form-input"
         type="text"
         placeholder="Nome completo"
-        value={formValues.name}
-        onChange={(e) => setFormValues({ ...formValues, name: e.target.value })}
+        value={formValues.nome}
+        onChange={(e) => {
+          setFormValues({ ...formValues, nome: e.target.value });
+          if (error) clearError();
+        }}
         disabled={loading}
       />
 
@@ -93,33 +86,27 @@ const RegisterForm: React.FC = () => {
         type="email"
         placeholder="Email"
         value={formValues.email}
-        onChange={(e) =>
-          setFormValues({ ...formValues, email: e.target.value })
-        }
+        onChange={(e) => {
+          setFormValues({ ...formValues, email: e.target.value });
+          if (error) clearError();
+        }}
         disabled={loading}
       />
 
       <input
         className="form-input"
         type="password"
-        placeholder="Senha (mínimo 6 caracteres)"
-        value={formValues.password}
-        onChange={(e) =>
-          setFormValues({ ...formValues, password: e.target.value })
-        }
+        placeholder="Senha"
+        value={formValues.senha}
+        onChange={(e) => {
+          setFormValues({ ...formValues, senha: e.target.value });
+          if (error) clearError();
+        }}
         disabled={loading}
       />
 
-      <button 
-        className="header-button" 
-        type="submit"
-        disabled={loading}
-        style={{ 
-          opacity: loading ? 0.6 : 1,
-          cursor: loading ? 'not-allowed' : 'pointer'
-        }}
-      >
-        {loading ? 'Registrando...' : 'Registrar'}
+      <button className="header-button" type="submit" disabled={loading}>
+        {loading ? "Registrando..." : "Registrar"}
       </button>
     </form>
   );

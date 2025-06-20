@@ -23,9 +23,10 @@ class ApiService {
     options: RequestInit = {}
   ): Promise<T> {
     const url = `${this.baseURL}${endpoint}`;
-      const headers: Record<string, string> = {
+    const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest',
       ...(options.headers as Record<string, string>),
     };
 
@@ -40,7 +41,15 @@ class ApiService {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+      
+      // Handle different response types
+      let data;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = { success: false, message: 'Invalid response format' };
+      }
 
       if (!response.ok) {
         throw new Error(data.message || `HTTP error! status: ${response.status}`);
@@ -52,26 +61,35 @@ class ApiService {
       throw error;
     }
   }
-
   // Auth Methods
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse>('/auth/login', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
+    try {
+      const response = await this.request<AuthResponse>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
 
-    if (response.success && response.data?.token) {
-      this.setToken(response.data.token);
+      if (response.success && response.data?.token) {
+        this.setToken(response.data.token);
+      }
+
+      return response;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
     }
-
-    return response;
   }
 
   async register(credentials: RegisterCredentials): Promise<ApiResponse<{ user: User }>> {
-    return this.request('/auth/register', {
-      method: 'POST',
-      body: JSON.stringify(credentials),
-    });
+    try {
+      return await this.request('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      });
+    } catch (error) {
+      console.error('Register error:', error);
+      throw error;
+    }
   }
 
   async logout(): Promise<ApiResponse> {
@@ -82,52 +100,97 @@ class ApiService {
       this.clearToken();
       return response;
     } catch (error) {
+      console.error('Logout error:', error);
       this.clearToken();
       throw error;
     }
   }
 
   async getCurrentUser(): Promise<ApiResponse<{ user: User }>> {
-    return this.request('/auth/me');
+    try {
+      return await this.request('/auth/me');
+    } catch (error) {
+      console.error('Get current user error:', error);
+      // Clear token if unauthorized
+      if (error instanceof Error && error.message.includes('401')) {
+        this.clearToken();
+      }
+      throw error;
+    }
   }
 
   // Adsense Methods - Public
   async getPublicAdsenses(): Promise<AdsenseResponse> {
-    return this.request('/adsense/home');
+    try {
+      return await this.request('/adsense/home');
+    } catch (error) {
+      console.error('Get public adsenses error:', error);
+      throw error;
+    }
   }
 
   async getAdsenseById(id: number): Promise<ApiResponse<Adsense>> {
-    return this.request(`/adsense/${id}`);
+    try {
+      return await this.request(`/adsense/${id}`);
+    } catch (error) {
+      console.error('Get adsense by ID error:', error);
+      throw error;
+    }
   }
 
   // Adsense Methods - Private (require auth)
   async getMyAdsenses(): Promise<AdsenseResponse> {
-    return this.request('/adsense/my');
+    try {
+      return await this.request('/adsense/my/dashboard');
+    } catch (error) {
+      console.error('Get my adsenses error:', error);
+      throw error;
+    }
   }
 
   async getDashboardAdsenses(): Promise<AdsenseResponse> {
-    return this.request('/adsense/dashboard');
+    try {
+      return await this.request('/adsense/my/dashboard');
+    } catch (error) {
+      console.error('Get dashboard adsenses error:', error);
+      throw error;
+    }
   }
 
   async createAdsense(data: CreateAdsenseData): Promise<ApiResponse<Adsense>> {
-    return this.request('/adsense', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    try {
+      return await this.request('/adsense', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.error('Create adsense error:', error);
+      throw error;
+    }
   }
 
   async updateAdsense(data: UpdateAdsenseData): Promise<ApiResponse<Adsense>> {
-    const { id, ...updateData } = data;
-    return this.request(`/adsense/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(updateData),
-    });
+    try {
+      const { id, ...updateData } = data;
+      return await this.request(`/adsense/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updateData),
+      });
+    } catch (error) {
+      console.error('Update adsense error:', error);
+      throw error;
+    }
   }
 
   async deleteAdsense(id: number): Promise<ApiResponse> {
-    return this.request(`/adsense/${id}`, {
-      method: 'DELETE',
-    });
+    try {
+      return await this.request(`/adsense/${id}`, {
+        method: 'DELETE',
+      });
+    } catch (error) {
+      console.error('Delete adsense error:', error);
+      throw error;
+    }
   }
 
   // Token Management
@@ -147,6 +210,16 @@ class ApiService {
 
   isAuthenticated(): boolean {
     return !!this.token;
+  }
+
+  // Health check
+  async healthCheck(): Promise<ApiResponse> {
+    try {
+      return await this.request('/health');
+    } catch (error) {
+      console.error('Health check error:', error);
+      throw error;
+    }
   }
 }
 

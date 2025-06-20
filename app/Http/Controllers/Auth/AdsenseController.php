@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\Adsense;
+use App\Models\Image;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 
@@ -19,10 +20,14 @@ class AdsenseController extends Controller
 
     public function index(): JsonResponse
     {
-        $adsenses = Adsense::with('user:id,name,email')->get();
+        $adsenses = Adsense::with(['user:id,name,email','images'])->get();
         return response()->json([
             'success' => true,
-            'data' => $adsenses,
+            'data' => $adsenses->map(function($adsense) {
+                $adsense->image_url = $adsense->images->first()?->url;
+                unset($adsense->images);
+                return $adsense;
+            }),
             'total' => $adsenses->count(),
             'message' => 'Lista de anúncios obtida com sucesso'
         ], 200);
@@ -31,13 +36,17 @@ class AdsenseController extends Controller
     // Método específico para a página HOME - pública
     public function home(): JsonResponse
     {
-        $adsenses = Adsense::with('user:id,name,email')
+        $adsenses = Adsense::with(['user:id,name,email','images'])
                           ->orderBy('created_at', 'desc')
                           ->get();
         
         return response()->json([
             'success' => true,
-            'data' => $adsenses,
+            'data' => $adsenses->map(function($adsense) {
+                $adsense->image_url = $adsense->images->first()?->url;
+                unset($adsense->images);
+                return $adsense;
+            }),
             'total' => $adsenses->count(),
             'message' => 'Lista pública de anúncios obtida com sucesso'
         ], 200);
@@ -45,13 +54,15 @@ class AdsenseController extends Controller
 
     public function show($id): JsonResponse
     {
-        $adsense = Adsense::with('user:id,name,email')->find((int)$id);
+        $adsense = Adsense::with(['user:id,name,email','images'])->find((int)$id);
         if (!$adsense) {
             return response()->json([
                 'success' => false,
                 'message' => 'Anúncio não encontrado'
             ], 404);
         }
+        $adsense->image_url = $adsense->images->first()?->url;
+        unset($adsense->images);
         return response()->json([
             'success' => true,
             'data' => $adsense,
@@ -62,16 +73,13 @@ class AdsenseController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            // Debug: Log dos dados recebidos
-            \Log::info('Dados recebidos no store:', $request->all());
-            
             $data = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'price' => 'required|numeric|min:0'
+                'price' => 'required|numeric|min:0',
+                'image_url' => 'nullable|string|url'
             ]);
 
-            // Usar dados do middleware
             $userId = $request->auth_user_id;
             
             $adsense = Adsense::create([
@@ -80,6 +88,14 @@ class AdsenseController extends Controller
                 'price' => (float)$data['price'],
                 'user_id' => $userId
             ]);
+
+            if (!empty($data['image_url'])) {
+                $image = new Image([
+                    'url' => $data['image_url']
+                ]);
+                $adsense->images()->save($image);
+                $adsense->image_url = $data['image_url'];
+            }
 
             $adsense->load('user:id,name,email');
 
@@ -115,7 +131,6 @@ class AdsenseController extends Controller
                 ], 404);
             }
 
-            // Usar dados do middleware (temporariamente sem validação)
             $userId = $request->auth_user_id;
             $userRole = $request->auth_user_role;
 
@@ -130,7 +145,8 @@ class AdsenseController extends Controller
             $data = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'required|string',
-                'price' => 'required|numeric|min:0'
+                'price' => 'required|numeric|min:0',
+                'image_url' => 'nullable|string|url'
             ]);
             
             $adsense->update([
@@ -138,6 +154,18 @@ class AdsenseController extends Controller
                 'description' => $data['description'],
                 'price' => $data['price']
             ]);
+
+            if (isset($data['image_url'])) {
+                // Remove existing images
+                $adsense->images()->delete();
+                
+                // Add new image
+                $image = new Image([
+                    'url' => $data['image_url']
+                ]);
+                $adsense->images()->save($image);
+                $adsense->image_url = $data['image_url'];
+            }
 
             $adsense->load('user:id,name,email');
 
@@ -185,6 +213,7 @@ class AdsenseController extends Controller
                 ], 403);
             }
 
+            $adsense->images()->delete();
             $adsense->delete();
 
             return response()->json([
@@ -206,14 +235,18 @@ class AdsenseController extends Controller
         // Pegar o user_id do request (definido pelo middleware)
         $userId = $request->get('auth_user_id', 1); // Default para usuário 1 se não definido
         
-        $adsenses = Adsense::with('user:id,name,email')
+        $adsenses = Adsense::with(['user:id,name,email','images'])
                           ->where('user_id', $userId)
                           ->orderBy('created_at', 'desc')
                           ->get();
         
         return response()->json([
             'success' => true,
-            'data' => $adsenses,
+            'data' => $adsenses->map(function($adsense) {
+                $adsense->image_url = $adsense->images->first()?->url;
+                unset($adsense->images);
+                return $adsense;
+            }),
             'total' => $adsenses->count(),
             'message' => 'Lista de meus anúncios obtida com sucesso'
         ], 200);
@@ -225,14 +258,18 @@ class AdsenseController extends Controller
         // Pegar o user_id do request (definido pelo middleware)
         $userId = $request->get('auth_user_id', 1);
         
-        $adsenses = Adsense::with('user:id,name,email')
+        $adsenses = Adsense::with(['user:id,name,email','images'])
                           ->where('user_id', $userId)
                           ->orderBy('created_at', 'desc')
                           ->get();
         
         return response()->json([
             'success' => true,
-            'data' => $adsenses,
+            'data' => $adsenses->map(function($adsense) {
+                $adsense->image_url = $adsense->images->first()?->url;
+                unset($adsense->images);
+                return $adsense;
+            }),
             'total' => $adsenses->count(),
             'message' => 'Dashboard - Lista de meus anúncios obtida com sucesso'
         ], 200);

@@ -7,10 +7,6 @@ export const validateEmail = (email: string): boolean => {
 export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
   
-  if (password.length < 6) {
-    errors.push('A senha deve ter pelo menos 6 caracteres');
-  }
-  
   return {
     isValid: errors.length === 0,
     errors

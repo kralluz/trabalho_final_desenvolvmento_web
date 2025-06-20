@@ -24,7 +24,8 @@ class AuthController extends Controller
             $user = User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
-                'password' => Hash::make($data['password']),
+                // Eloquent 'password' cast will hash automatically
+                'password' => $data['password'],
                 'role' => $data['role'] ?? 'user'
             ]);
 
@@ -70,11 +71,16 @@ class AuthController extends Controller
             if (!$user || !Hash::check($data['password'], $user->password)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Credenciais inválidas'
+                    'message' => 'Hash inválido',
+                    'debug' => [
+                        'password_input' => $data['password'],
+                        'password_db' => $user ? $user->password : null,
+                        'hash_check_result' => $user ? Hash::check($data['password'], $user->password) : null
+                    ]
                 ], 401);
             }
 
-            // Gerar token único e salvar no banco
+            // Gerar token único
             $token = hash('sha256', $user->id . time() . random_bytes(32));
             
             // Salvar token no banco
@@ -87,7 +93,9 @@ class AuthController extends Controller
                         'id' => $user->id,
                         'name' => $user->name,
                         'email' => $user->email,
-                        'role' => $user->role
+                        'role' => $user->role,
+                        'created_at' => $user->created_at,
+                        'updated_at' => $user->updated_at
                     ],
                     'token' => $token,
                     'token_type' => 'Bearer'
@@ -123,17 +131,17 @@ class AuthController extends Controller
             }
 
             $token = substr($authHeader, 7);
-            $tokenData = cache()->get('auth_token_' . $token);
+            $user = User::where('api_token', $token)->first();
             
-            if (!$tokenData) {
+            if (!$user) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Token inválido ou expirado'
                 ], 401);
             }
 
-            // Remover token do cache
-            cache()->forget('auth_token_' . $token);
+            // Remover token do banco
+            $user->update(['api_token' => null]);
 
             return response()->json([
                 'success' => true,
@@ -162,22 +170,13 @@ class AuthController extends Controller
             }
 
             $token = substr($authHeader, 7);
-            $tokenData = cache()->get('auth_token_' . $token);
-            
-            if (!$tokenData) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Token inválido ou expirado'
-                ], 401);
-            }
-
-            $user = User::find($tokenData['user_id']);
+            $user = User::where('api_token', $token)->first();
             
             if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Usuário não encontrado'
-                ], 404);
+                    'message' => 'Token inválido ou expirado'
+                ], 401);
             }
 
             return response()->json([

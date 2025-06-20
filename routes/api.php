@@ -8,6 +8,7 @@ use Illuminate\Validation\ValidationException;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Auth\AdsenseController;
 use App\Http\Controllers\Auth\ImageController;
+use App\Http\Controllers\Auth\CloudinaryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -191,4 +192,14 @@ Route::prefix('images')->group(function () {
         Route::put('/{id}', [ImageController::class, 'update']);
         Route::delete('/{id}', [ImageController::class, 'destroy']);
     });
+});
+
+// Cloudinary routes
+Route::get('/cloudinary/signature', [CloudinaryController::class, 'generateSignature']);
+
+// Rotas autenticadas
+Route::middleware(['auth:sanctum'])->group(function () {
+    // Rotas de imagens
+    Route::post('/images', [ImageController::class, 'store']);
+    Route::delete('/images/{id}', [ImageController::class, 'destroy']);
 });

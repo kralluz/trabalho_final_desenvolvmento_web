@@ -1,185 +1,124 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
-import { useAdsense } from "../../contexts/AdsenseContext";
-import AdsenseCard from "../../components/AdsenseCard";
-import AdsenseForm from "../../components/AdsenseForm";
-import { Adsense, CreateAdsenseRequest } from "../../services/api";
+import Header from "@/components/Header";
 import "./dashboard.style.css";
+import ModalCreateAd from "@/components/ModalCreateAd";
+import PostList, { CardItem } from "@/components/PostList";
+import imagemTeste from "/resources/js/assets/images/imagemTeste.jpg";
+import {
+  getMyAdsenses,
+  createAdsense,
+  updateAdsense,
+  deleteAdsense,
+} from "@/api/adsense";
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
-  const { 
-    adsenseList, 
-    loading, 
-    error, 
-    loadAdsenses,
-    createAdsense, 
-    deleteAdsense, 
-    updateAdsense 
-  } = useAdsense();
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [cards, setCards] = useState<CardItem[]>([]);
 
-  const [showForm, setShowForm] = useState(false);
-  const [editingAdsense, setEditingAdsense] = useState<Adsense | null>(null);
-
-  // Redirect to login if not authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/login");
-      return;
+    const fetchCards = async () => {
+      try {
+        const data = await getMyAdsenses();
+        setCards(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCards();
+  }, []);
+
+  const handleNavigate = () => {
+    navigate("/home");
+  };
+
+  const handleNewAd = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleAddCard = async (newCardData: { 
+    titulo: string; 
+    descricao: string; 
+    preco: string; 
+    imagemFile: File 
+  }) => {
+    try {
+      await createAdsense({
+        ...newCardData,
+        images: [newCardData.imagemFile]
+      });
+      const data = await getMyAdsenses();
+      setCards(data);
+      setIsModalOpen(false);
+    } catch (err) {
+      console.error(err);
     }
-  }, [isAuthenticated, navigate]);
-
-  const handleCreateAdsense = async (data: CreateAdsenseRequest): Promise<boolean> => {
-    const success = await createAdsense(data);
-    if (success) {
-      setShowForm(false);
-      return true;
-    }
-    return false;
   };
 
-  const handleUpdateAdsense = async (data: CreateAdsenseRequest): Promise<boolean> => {
-    if (!editingAdsense) return false;
-    
-    const success = await updateAdsense(editingAdsense.id, data);
-    if (success) {
-      setEditingAdsense(null);
-      setShowForm(false);
-      return true;
-    }
-    return false;
-  };
-
-  const handleDeleteAdsense = async (id: number) => {
-    const success = await deleteAdsense(id);
-    if (success) {
-      // Optionally show success message
-      console.log("Anúncio deletado com sucesso!");
+  const handleEdit = async (card: CardItem) => {
+    const titulo = prompt("Editar título", card.titulo);
+    if (titulo === null) return;
+    const descricao = prompt("Editar descrição", card.descricao);
+    if (descricao === null) return;
+    const preco = prompt("Editar preço (ex: R$100.00)", card.preco);
+    if (preco === null) return;
+    try {
+      await updateAdsense(card.id, { titulo, descricao, preco });
+      const data = await getMyAdsenses();
+      setCards(data);
+    } catch (err) {
+      console.error(err);
     }
   };
 
-  const handleEditAdsense = (adsense: Adsense) => {
-    setEditingAdsense(adsense);
-    setShowForm(true);
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Confirma exclusão deste anúncio?")) return;
+    try {
+      await deleteAdsense(id);
+      const data = await getMyAdsenses();
+      setCards(data);
+    } catch (err) {
+      console.error(err);
+    }
   };
-
-  const handleCancelForm = () => {
-    setShowForm(false);
-    setEditingAdsense(null);
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
-  };
-
-  if (!isAuthenticated || !user) {
-    return (
-      <div className="dashboard-loading">
-        <p>Carregando...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
-        <div className="dashboard-header-content">
-          <div className="dashboard-user-info">
-            <h1>Dashboard</h1>
-            <p>Bem-vindo, <strong>{user.name}</strong>!</p>
-          </div>
-          <div className="dashboard-header-actions">
-            <button onClick={() => navigate("/home")} className="btn btn-outline">
-              Página Inicial
-            </button>
-            <button onClick={handleLogout} className="btn btn-secondary">
-              Sair
-            </button>
-          </div>
-        </div>
+        <span className="dashboard-link" onClick={handleNavigate}>
+          Ir para a página inicial
+        </span>
+        <button className="new-ad-button" onClick={handleNewAd}>
+          Novo Anúncio
+        </button>
       </header>
 
-      <main className="dashboard-main">
-        {error && (
-          <div className="error-message-banner">
-            <p>{error}</p>
-            <button onClick={loadAdsenses} className="btn btn-sm">
-              Tentar novamente
-            </button>
-          </div>
-        )}
-
-        <section className="dashboard-section">
-          <div className="section-header">
-            <h2>Meus Anúncios</h2>
-            <button 
-              onClick={() => setShowForm(true)} 
-              className="btn btn-primary"
-              disabled={loading}
-            >
-              + Novo Anúncio
-            </button>
-          </div>
-
-          {showForm && (
-            <AdsenseForm
-              onSubmit={editingAdsense ? handleUpdateAdsense : handleCreateAdsense}
-              onCancel={handleCancelForm}
-              initialData={editingAdsense}
-              isLoading={loading}
-            />
-          )}
-
-          {loading && !showForm && (
-            <div className="loading-container">
-              <p>Carregando anúncios...</p>
+      <div className="dashboard-cards">
+        <div className="cards-container">
+          {cards.map((card) => (
+            <div className="card" key={card.id}>
+              <img
+                src={card.imagem || undefined}
+                alt="imagem do card"
+                className="imagemCard"
+              />
+              <h3 className="card-title">{card.titulo}</h3>
+              <p className="card-text">{card.descricao}</p>
+              <p className="card-title">{card.preco}</p>
+              <button onClick={() => handleEdit(card)}>Editar</button>
+              <button onClick={() => handleDelete(card.id)}>Excluir</button>
             </div>
-          )}
+          ))}
+        </div>
+      </div>
 
-          {!loading && adsenseList.length === 0 && (
-            <div className="empty-state">
-              <h3>Nenhum anúncio encontrado</h3>
-              <p>Você ainda não criou nenhum anúncio. Clique no botão "Novo Anúncio" para começar!</p>
-            </div>
-          )}
-
-          {!loading && adsenseList.length > 0 && (
-            <div className="adsense-list">
-              {adsenseList.map((adsense) => (
-                <AdsenseCard
-                  key={adsense.id}
-                  adsense={adsense}
-                  onDelete={handleDeleteAdsense}
-                  onEdit={handleEditAdsense}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="dashboard-stats">
-          <div className="stats-grid">
-            <div className="stat-card">
-              <h3>Total de Anúncios</h3>
-              <p className="stat-number">{adsenseList.length}</p>
-            </div>
-            <div className="stat-card">
-              <h3>Valor Total</h3>
-              <p className="stat-number">
-                {new Intl.NumberFormat('pt-BR', {
-                  style: 'currency',
-                  currency: 'BRL'
-                }).format(
-                  adsenseList.reduce((total, adsense) => total + adsense.price, 0)
-                )}
-              </p>
-            </div>
-          </div>
-        </section>
-      </main>
+      {/* Modal de Criação */}
+      <ModalCreateAd
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAddCard={handleAddCard}
+      />
     </div>
   );
 };

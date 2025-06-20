@@ -1,142 +1,91 @@
-.adsense-form-container {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e0e0e0;
-  margin-bottom: 24px;
-}
-
-.adsense-form-header {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.adsense-form-header h2 {
-  margin: 0;
-  color: #333;
-  font-size: 1.5rem;
-  font-weight: 600;
-}
-
 .adsense-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
+  margin-bottom: 20px;
 }
 
 .form-label {
-  font-weight: 500;
-  color: #333;
+  display: block;
   margin-bottom: 8px;
-  font-size: 0.95rem;
+  font-weight: 500;
 }
 
-.form-input,
-.form-textarea {
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  background-color: white;
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
 }
 
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: #1976d2;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+.form-input.error {
+  border-color: #dc3545;
 }
 
-.form-input.error,
-.form-textarea.error {
-  border-color: #d32f2f;
-}
-
-.form-input:disabled,
-.form-textarea:disabled {
-  background-color: #f5f5f5;
-  cursor: not-allowed;
-}
-
-.form-textarea {
-  resize: vertical;
+textarea.form-input {
   min-height: 100px;
-  font-family: inherit;
+  resize: vertical;
 }
 
 .error-message {
-  color: #d32f2f;
-  font-size: 0.85rem;
+  color: #dc3545;
+  font-size: 14px;
   margin-top: 4px;
+  display: block;
+}
+
+.upload-status {
+  color: #0066cc;
+  font-size: 14px;
+  margin-left: 8px;
+}
+
+.image-preview {
+  margin-top: 10px;
+}
+
+.image-preview img {
+  border-radius: 4px;
+  border: 1px solid #ddd;
 }
 
 .form-actions {
   display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid #f0f0f0;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .btn {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 16px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  min-width: 100px;
+  border: none;
 }
 
 .btn:disabled {
+  opacity: 0.7;
   cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .btn-primary {
-  background-color: #1976d2;
+  background-color: #0066cc;
   color: white;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #1565c0;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
+  background-color: #0052a3;
 }
 
 .btn-secondary {
-  background-color: #f5f5f5;
-  color: #666;
-  border: 1px solid #e0e0e0;
+  background-color: #6c757d;
+  color: white;
 }
 
 .btn-secondary:hover:not(:disabled) {
-  background-color: #eeeeee;
-  border-color: #d0d0d0;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-  .adsense-form-container {
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  
-  .form-actions {
-    flex-direction: column;
-  }
-  
-  .btn {
-    width: 100%;
-  }
+  background-color: #5a6268;
 }

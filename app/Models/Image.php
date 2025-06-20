@@ -16,8 +16,7 @@ class Image extends Model
      */
     protected $fillable = [
         'url',
-        'adsense_id',
-        'public_id',
+        'path',
         'metadata'
     ];
 
@@ -27,14 +26,24 @@ class Image extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'metadata' => 'array',
+        'metadata' => 'array'
     ];
 
     /**
      * Get the adsense that owns the image.
      */
-    public function adsense()
+    public function adsenses()
     {
-        return $this->belongsTo(Adsense::class);
+        return $this->belongsToMany(Adsense::class);
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($image) {
+            // Delete related records in pivot table
+            $image->adsenses()->detach();
+        });
     }
 }

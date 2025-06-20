@@ -1,6 +1,6 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { Adsense } from '../types';
-import { useAdsense } from '../hooks/useAdsense';
+import { useAdsense as useAdsenseHook } from '../hooks/useAdsense';
 
 interface AdsenseContextType {
   adsenses: Adsense[];
@@ -22,7 +22,7 @@ interface AdsenseProviderProps {
 }
 
 export const AdsenseProvider: React.FC<AdsenseProviderProps> = ({ children }) => {
-  const adsenseHook = useAdsense();
+  const adsenseHook = useAdsenseHook();
 
   return (
     <AdsenseContext.Provider value={adsenseHook}>
@@ -38,3 +38,6 @@ export const useAdsenseContext = (): AdsenseContextType => {
   }
   return context;
 };
+
+// Export useAdsense as an alias for useAdsenseContext for compatibility
+export const useAdsense = useAdsenseContext;

@@ -9,14 +9,18 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Image;
 use App\Models\User;
 use App\Services\CloudinaryService;
+use App\Services\FileUploadService;
+use Illuminate\Support\Facades\Validator;
 
 class ImageController extends Controller
 {
     protected $cloudinaryService;
+    protected $fileUploadService;
 
-    public function __construct(CloudinaryService $cloudinaryService)
+    public function __construct(CloudinaryService $cloudinaryService, FileUploadService $fileUploadService)
     {
         $this->cloudinaryService = $cloudinaryService;
+        $this->fileUploadService = $fileUploadService;
     }
 
     private function user()
@@ -55,49 +59,40 @@ class ImageController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            $data = $request->validate([
-                'adsense_id' => 'required|integer|exists:adsenses,id',
-                'image' => 'required|image|max:10240' // Max 10MB
-            ]);
-            
-            // Upload to Cloudinary
-            $file = $request->file('image');
-            $uploadResult = $this->cloudinaryService->uploadImage($file, null, [
-                'folder' => config('cloudinary.folder') . '/' . $data['adsense_id']
-            ]);
-            
-            // Save metadata to database
-            $image = Image::create([
-                'adsense_id' => $data['adsense_id'],
-                'url' => $uploadResult['url'],
-                'public_id' => $uploadResult['public_id'],
-                'metadata' => [
-                    'format' => $uploadResult['format'],
-                    'width' => $uploadResult['width'],
-                    'height' => $uploadResult['height'],
-                    'bytes' => $uploadResult['bytes']
-                ]
+            $validator = Validator::make($request->all(), [
+                'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
             ]);
 
-            $image->load('adsense:id,title');
+            if ($validator->fails()) {
+                return response()->json([
+                    'message' => 'Validation failed',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $file = $request->file('image');
+            
+            // Use local storage instead of Cloudinary
+            $uploadResult = $this->fileUploadService->uploadImage($file);
+
+            // Save image record to database
+            $image = new Image([
+                'url' => $uploadResult['url'],
+                'path' => $uploadResult['path'],
+                'metadata' => json_encode($uploadResult['metadata'])
+            ]);
+
+            $image->save();
 
             return response()->json([
-                'success' => true,
-                'data' => $image,
-                'message' => 'Imagem enviada com sucesso'
+                'message' => 'Image uploaded successfully',
+                'image' => $image
             ], 201);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dados de validação inválidos',
-                'errors' => $e->errors()
-            ], 422);
         } catch (\Exception $e) {
-            Log::error('Error uploading image: ' . $e->getMessage());
+            Log::error('Image upload error: ' . $e->getMessage());
             return response()->json([
-                'success' => false,
-                'message' => 'Erro ao enviar imagem',
+                'message' => 'Error uploading image',
                 'error' => $e->getMessage()
             ], 500);
         }
@@ -153,6 +148,9 @@ class ImageController extends Controller
                 ], 404);
             }
 
+            // Delete file from storage
+            $this->fileUploadService->deleteImage($image->path);
+            
             // Delete from Cloudinary if public_id exists
             if ($image->public_id) {
                 $this->cloudinaryService->deleteImage($image->public_id);
