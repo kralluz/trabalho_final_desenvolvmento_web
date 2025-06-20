@@ -1,0 +1,94 @@
+/* Modal Confirm Delete Styles */
+.delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.delete-modal-content {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.delete-modal-content h2 {
+  margin: 0 0 20px 0;
+  color: #dc3545;
+  font-size: 24px;
+}
+
+.delete-modal-message {
+  color: #495057;
+  margin-bottom: 30px;
+  line-height: 1.5;
+  font-size: 16px;
+}
+
+.delete-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.delete-modal-cancel,
+.delete-modal-confirm {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 120px;
+}
+
+.delete-modal-cancel {
+  background-color: #6c757d;
+  color: white;
+}
+
+.delete-modal-cancel:hover {
+  background-color: #5a6268;
+}
+
+.delete-modal-confirm {
+  background-color: #dc3545;
+  color: white;
+}
+
+.delete-modal-confirm:hover {
+  background-color: #c82333;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .delete-modal-overlay {
+    padding: 15px;
+  }
+  
+  .delete-modal-content {
+    padding: 20px;
+  }
+  
+  .delete-modal-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .delete-modal-cancel,
+  .delete-modal-confirm {
+    width: 100%;
+  }
+}

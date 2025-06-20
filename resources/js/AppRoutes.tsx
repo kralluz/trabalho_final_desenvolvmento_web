@@ -5,12 +5,12 @@ import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Admin from "./pages/Admin";
-import Contact from "./pages/Contact";
+import Contact from "./pages/ContactPage";
 import AboutUs from "./pages/AboutUs";
 import MainLayout from "./Layout/MainLayout";
-import TermsOfUse from "./pages/TermsOfUse";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Help from "./pages/Help";
+import TermsOfUse from "./pages/TermsOfUsePage";
+import PrivacyPolicy from "./pages/PrivacyPolicyPage";
+import Help from "./pages/HelpPage";
 import AdminDashboard from "./pages/AdminDashboard";
 
 

@@ -2,6 +2,13 @@ import { useState, useCallback, useEffect } from 'react';
 import { User, LoginCredentials, RegisterCredentials } from '../types';
 import apiService from '../services/apiService';
 
+export interface UpdateUserData {
+  name: string;
+  email: string;
+  currentPassword?: string;
+  newPassword?: string;
+}
+
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);

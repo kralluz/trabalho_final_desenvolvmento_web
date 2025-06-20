@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import './ModalEditAd.style.css';
 
-interface ModalEditAdProps {
+export interface ModalEditAdProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: {

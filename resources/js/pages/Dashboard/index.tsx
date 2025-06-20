@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import "./dashboard.style.css";
 import ModalCreateAd from "@/components/ModalCreateAd";
+import ModalEditAd from "@/components/ModalEditAd";
+import ModalConfirmDelete from "@/components/ModalConfirmDelete";
 import PostList, { CardItem } from "@/components/PostList";
-import imagemTeste from "/resources/js/assets/images/imagemTeste.jpg";
 import {
   getMyAdsenses,
   createAdsense,
@@ -14,8 +15,11 @@ import {
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
   const [cards, setCards] = useState<CardItem[]>([]);
+  const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
 
   useEffect(() => {
     const fetchCards = async () => {
@@ -34,7 +38,7 @@ const Dashboard: React.FC = () => {
   };
 
   const handleNewAd = () => {
-    setIsModalOpen(true);
+    setIsCreateModalOpen(true);
   };
 
   const handleAddCard = async (newCardData: { 
@@ -50,34 +54,50 @@ const Dashboard: React.FC = () => {
       });
       const data = await getMyAdsenses();
       setCards(data);
-      setIsModalOpen(false);
+      setIsCreateModalOpen(false);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleEdit = async (card: CardItem) => {
-    const titulo = prompt("Editar título", card.titulo);
-    if (titulo === null) return;
-    const descricao = prompt("Editar descrição", card.descricao);
-    if (descricao === null) return;
-    const preco = prompt("Editar preço (ex: R$100.00)", card.preco);
-    if (preco === null) return;
+  const handleEdit = (card: CardItem) => {
+    setSelectedCard(card);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditSubmit = async (editedData: {
+    titulo: string;
+    descricao: string;
+    preco: string;
+    imagemFile?: File;
+  }) => {
+    if (!selectedCard) return;
+    
     try {
-      await updateAdsense(card.id, { titulo, descricao, preco });
+      await updateAdsense(selectedCard.id, editedData);
       const data = await getMyAdsenses();
       setCards(data);
+      setIsEditModalOpen(false);
+      setSelectedCard(null);
     } catch (err) {
       console.error(err);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("Confirma exclusão deste anúncio?")) return;
+  const handleDelete = (card: CardItem) => {
+    setSelectedCard(card);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedCard) return;
+    
     try {
-      await deleteAdsense(id);
+      await deleteAdsense(selectedCard.id);
       const data = await getMyAdsenses();
       setCards(data);
+      setIsDeleteModalOpen(false);
+      setSelectedCard(null);
     } catch (err) {
       console.error(err);
     }
@@ -86,9 +106,12 @@ const Dashboard: React.FC = () => {
   return (
     <div className="dashboard-container">
       <header className="dashboard-header">
-        <span className="dashboard-link" onClick={handleNavigate}>
-          Ir para a página inicial
-        </span>
+        <div className="dashboard-title">
+          Meus Anúncios
+          <span className="dashboard-link" onClick={handleNavigate}>
+            Ir para Home
+          </span>
+        </div>
         <button className="new-ad-button" onClick={handleNewAd}>
           Novo Anúncio
         </button>
@@ -103,12 +126,18 @@ const Dashboard: React.FC = () => {
                 alt="imagem do card"
                 className="imagemCard"
               />
-              <h3 className="card-title">{card.titulo}</h3>
-              <p className="card-text">{card.descricao}</p>
-              <p className="card-title">{card.preco}</p>
+              <div className="card-content">
+                <h3 className="card-title">{card.titulo}</h3>
+                <p className="card-text">{card.descricao}</p>
+                <p className="card-price">{card.preco}</p>
+              </div>
               <div className="card-actions">
-                <button onClick={() => handleEdit(card)}>Editar</button>
-                <button onClick={() => handleDelete(card.id)}>Excluir</button>
+                <button onClick={() => handleEdit(card)}>
+                  <span role="img" aria-label="editar">✏️</span> Editar
+                </button>
+                <button onClick={() => handleDelete(card)}>
+                  <span role="img" aria-label="excluir">🗑️</span> Excluir
+                </button>
               </div>
             </div>
           ))}
@@ -117,9 +146,34 @@ const Dashboard: React.FC = () => {
 
       {/* Modal de Criação */}
       <ModalCreateAd
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
         onAddCard={handleAddCard}
+      />
+
+      {/* Modal de Edição */}
+      {selectedCard && (
+        <ModalEditAd
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedCard(null);
+          }}
+          onSubmit={handleEditSubmit}
+          initialData={selectedCard}
+        />
+      )}
+
+      {/* Modal de Confirmação de Deleção */}
+      <ModalConfirmDelete
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedCard(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title="Confirmar exclusão"
+        message={`Tem certeza que deseja excluir o anúncio "${selectedCard?.titulo}"? Esta ação não pode ser desfeita.`}
       />
     </div>
   );

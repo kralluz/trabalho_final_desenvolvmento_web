@@ -9,6 +9,7 @@ import {
   CreateAdsenseData,
   UpdateAdsenseData
 } from '../types';
+import { UpdateUserData } from '../hooks/useAuth';
 
 class ApiService {
   private baseURL = 'http://localhost:8000/api';
@@ -211,13 +212,25 @@ class ApiService {
   isAuthenticated(): boolean {
     return !!this.token;
   }
-
   // Health check
   async healthCheck(): Promise<ApiResponse> {
     try {
       return await this.request('/health');
     } catch (error) {
       console.error('Health check error:', error);
+      throw error;
+    }
+  }
+
+  // User Methods
+  async updateUser(data: UpdateUserData): Promise<ApiResponse<{ user: User }>> {
+    try {
+      return await this.request('/auth/user', {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    } catch (error) {
+      console.error('Update user error:', error);
       throw error;
     }
   }

@@ -1,0 +1,20 @@
+import { UpdateUserData } from '../hooks/useAuth';
+
+// Atualizar interface ApiResponse
+interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: any;
+}
+
+interface UpdateUserResponse {
+  user: User;
+}
+
+async updateUser(data: UpdateUserData): Promise<ApiResponse<UpdateUserResponse>> {
+  return this.request('/auth/user', {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  });
+}

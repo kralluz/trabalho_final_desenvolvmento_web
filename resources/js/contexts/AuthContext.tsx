@@ -10,6 +10,7 @@ interface AuthContextType {
   clearError: () => void;
   login: (credentials: { email: string; password: string }) => Promise<boolean>;
   register: (credentials: { name: string; email: string; password: string; role?: 'user' | 'admin' }) => Promise<boolean>;
+  updateUser: (data: { name: string; email: string; currentPassword?: string; newPassword?: string; }) => Promise<boolean>;
   logout: () => Promise<void>;
   getCurrentUser: () => Promise<void>;
   isAuthenticated: () => boolean;
