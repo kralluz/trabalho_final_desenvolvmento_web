@@ -22,6 +22,11 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.modal-content::-webkit-scrollbar {
+  display: none;
 }
 
 .modal-content h2 {
@@ -174,18 +179,19 @@
 /* Responsividade */
 @media (max-width: 768px) {
   .modal-overlay {
-    padding: 15px;
+    padding: 5px;
+    align-items: flex-start;
   }
-  
   .modal-content {
-    padding: 20px;
+    padding: 12px;
+    max-width: 98vw;
+    max-height: 96vh;
+    border-radius: 8px;
   }
-  
   .modal-actions {
     flex-direction: column;
     gap: 10px;
   }
-  
   .cancel-button,
   .submit-button {
     width: 100%;

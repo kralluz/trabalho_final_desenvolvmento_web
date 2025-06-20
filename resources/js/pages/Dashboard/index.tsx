@@ -120,15 +120,10 @@ const Dashboard: React.FC = () => {
 
       <div className="dashboard-cards">
         <PostList 
-          cards={cards.map(card => ({
-            ...card,
-            status: 'Ativo',
-            isNew: true // ou lógica para "Novo"
-          }))}
+          cards={cards}
           onEdit={handleEdit}
           onDelete={handleDelete}
           showActions
-          showLabels
         />
       </div>
 

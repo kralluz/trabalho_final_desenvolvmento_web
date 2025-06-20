@@ -24,12 +24,7 @@ export default function PostList({ cards, onEdit, onDelete, showActions, showLab
             <div className="cards-container">
                 {cards.map((card) => (
                     <div className="card" key={card.id}>
-                        {showLabels && (
-                            <div className="card-header">
-                                {card.status && <span className="card-label card-label-status">{card.status}</span>}
-                                {card.isNew && <span className="card-label card-label-new">Novo</span>}
-                            </div>
-                        )}
+                        {/* Removido labels de status/Novo do topo dos cards */}
                         <img src={card.imagem || undefined} alt="imagem do card" className="imagemCard" />
 
                         <h3 className="card-title"> Titulo: {card.titulo} </h3>
