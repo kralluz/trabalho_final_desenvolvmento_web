@@ -6,6 +6,7 @@ import ModalCreateAd from "@/components/ModalCreateAd";
 import ModalEditAd from "@/components/ModalEditAd";
 import ModalConfirmDelete from "@/components/ModalConfirmDelete";
 import PostList, { CardItem } from "@/components/PostList";
+import { Adsense } from "@/types/adsense";
 import {
   getMyAdsenses,
   createAdsense,
@@ -118,30 +119,17 @@ const Dashboard: React.FC = () => {
       </header>
 
       <div className="dashboard-cards">
-        <div className="cards-container">
-          {cards.map((card) => (
-            <div className="card" key={card.id}>
-              <img
-                src={card.imagem || undefined}
-                alt="imagem do card"
-                className="imagemCard"
-              />
-              <div className="card-content">
-                <h3 className="card-title">{card.titulo}</h3>
-                <p className="card-text">{card.descricao}</p>
-                <p className="card-price">{card.preco}</p>
-              </div>
-              <div className="card-actions">
-                <button onClick={() => handleEdit(card)}>
-                  <span role="img" aria-label="editar">✏️</span> Editar
-                </button>
-                <button onClick={() => handleDelete(card)}>
-                  <span role="img" aria-label="excluir">🗑️</span> Excluir
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+        <PostList 
+          cards={cards.map(card => ({
+            ...card,
+            status: 'Ativo',
+            isNew: true // ou lógica para "Novo"
+          }))}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          showActions
+          showLabels
+        />
       </div>
 
       {/* Modal de Criação */}
@@ -160,7 +148,10 @@ const Dashboard: React.FC = () => {
             setSelectedCard(null);
           }}
           onSubmit={handleEditSubmit}
-          initialData={selectedCard}
+          initialData={{
+            ...selectedCard,
+            imagem: selectedCard.imagem || undefined
+          }}
         />
       )}
 

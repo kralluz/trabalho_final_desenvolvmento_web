@@ -4,16 +4,8 @@ import './ModalEditUser.style.css';
 interface ModalEditUserProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: {
-    name: string;
-    email: string;
-    currentPassword?: string;
-    newPassword?: string;
-  }) => void;
-  initialData: {
-    name: string;
-    email: string;
-  };
+  onSubmit: (data: { name: string }) => void;
+  initialData: { name: string };
 }
 
 const ModalEditUser: React.FC<ModalEditUserProps> = ({
@@ -21,12 +13,8 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({
   onClose,
   onSubmit,
   initialData
-}) => {
-  const [formData, setFormData] = useState({
-    name: initialData.name,
-    email: initialData.email,
-    currentPassword: '',
-    newPassword: '',
+}) => {  const [formData, setFormData] = useState({
+    name: initialData.name
   });
   const [error, setError] = useState<string>('');
 
@@ -41,33 +29,12 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email) {
-      setError('Nome e e-mail são obrigatórios.');
-      return;
-    }
-
-    // Se uma nova senha foi fornecida, a senha atual também deve ser fornecida
-    if (formData.newPassword && !formData.currentPassword) {
-      setError('Para alterar a senha, informe a senha atual.');
-      return;
-    }
-
-    // Se a senha atual foi fornecida, a nova senha também deve ser fornecida
-    if (formData.currentPassword && !formData.newPassword) {
-      setError('Informe a nova senha.');
-      return;
-    }
-
-    const submitData = {
-      name: formData.name,
-      email: formData.email,
-      ...(formData.currentPassword && formData.newPassword ? {
-        currentPassword: formData.currentPassword,
-        newPassword: formData.newPassword
-      } : {})
-    };
-
-    onSubmit(submitData);
+    if (!formData.name) {
+      setError('O nome é obrigatório.');
+      return;    }
+    
+    onSubmit({ name: formData.name });
+    onClose();
   };
 
   if (!isOpen) return null;
@@ -80,7 +47,7 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({
         {error && (
           <div className="error-message">{error}</div>
         )}
-
+        
         <form onSubmit={handleSubmit}>
           <div className="input-group">
             <label>Nome</label>
@@ -92,45 +59,6 @@ const ModalEditUser: React.FC<ModalEditUserProps> = ({
               placeholder="Seu nome"
               required
             />
-          </div>
-
-          <div className="input-group">
-            <label>E-mail</label>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="seu@email.com"
-              required
-            />
-          </div>
-
-          <div className="password-section">
-            <h3>Alterar Senha (opcional)</h3>
-            
-            <div className="input-group">
-              <label>Senha Atual</label>
-              <input
-                type="password"
-                name="currentPassword"
-                value={formData.currentPassword}
-                onChange={handleChange}
-                placeholder="Digite sua senha atual"
-              />
-            </div>
-
-            <div className="input-group">
-              <label>Nova Senha</label>
-              <input
-                type="password"
-                name="newPassword"
-                value={formData.newPassword}
-                onChange={handleChange}
-                placeholder="Digite a nova senha"
-                minLength={6}
-              />
-            </div>
           </div>
 
           <div className="modal-actions">

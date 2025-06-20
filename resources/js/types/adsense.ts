@@ -18,9 +18,15 @@ export interface Adsense {
   description: string;
   price: number;
   user_id: number;
-  image_url?: string;
-  created_at: string;
+  status: boolean;
+  image?: {
+    id: number;
+    url: string;
+    created_at: string;
+    updated_at: string;
+  };  created_at: string;
   updated_at: string;
+  image_url?: string;
   user?: {
     id: number;
     name: string;
