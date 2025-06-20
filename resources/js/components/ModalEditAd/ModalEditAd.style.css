@@ -141,31 +141,17 @@
   border-top: 1px solid #eee;
 }
 
-.cancel-button,
-.submit-button {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
 .cancel-button {
   background-color: #6c757d;
   color: white;
 }
-
 .cancel-button:hover:not(:disabled) {
   background-color: #5a6268;
 }
-
 .submit-button {
   background-color: #007bff;
   color: white;
 }
-
 .submit-button:hover:not(:disabled) {
   background-color: #0056b3;
 }
@@ -174,6 +160,62 @@
 .submit-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+.cancel-button,
+.submit-button {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s, color 0.18s;
+  min-height: 44px;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  margin: 0;
+}
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid #eee;
+}
+.cancel-button {
+  background-color: #f3f4f6;
+  color: #333;
+  border: 1px solid #d1d5db;
+  box-shadow: none;
+}
+.cancel-button:hover:not(:disabled),
+.cancel-button:focus-visible {
+  background-color: #e5e7eb;
+  color: #222;
+  border-color: #bdbdbd;
+  outline: none;
+}
+.submit-button {
+  background-color: #007bff;
+  color: #fff;
+  border: 1px solid #007bff;
+  box-shadow: none;
+}
+.submit-button:hover:not(:disabled),
+.submit-button:focus-visible {
+  background-color: #0056b3;
+  border-color: #0056b3;
+  color: #fff;
+  outline: none;
+}
+.cancel-button:disabled,
+.submit-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
 }
 
 /* Responsividade */

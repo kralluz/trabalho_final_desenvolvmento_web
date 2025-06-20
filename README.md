@@ -1,69 +1,156 @@
-# Laravel + React Starter Kit
+# 🎓 Contexto Acadêmico
 
-## Introduction
+**Curso:** Bacharelado em Sistemas de Informação  
+**Disciplina:** Desenvolvimento Web II  
+**Semestre:** 2025/01
 
-Our React starter kit provides a robust, modern starting point for building Laravel applications with a React frontend using [Inertia](https://inertiajs.com).
+**Equipe:**
 
-Inertia allows you to build modern, single-page React applications using classic server-side routing and controllers. This lets you enjoy the frontend power of React combined with the incredible backend productivity of Laravel and lightning-fast Vite compilation.
+- Carlos Henrique Alves
+- Felipe Gomes
+- Iago José
+- Victor Augusto
 
-This React starter kit utilizes React 19, TypeScript, Tailwind, and the [shadcn/ui](https://ui.shadcn.com) and [radix-ui](https://www.radix-ui.com) component libraries.
+---
 
-## Official Documentation
+## 👥 Responsabilidades da Equipe
 
-Documentation for all Laravel starter kits can be found on the [Laravel website](https://laravel.com/docs/starter-kits).
+- **Carlos Henrique Alves**: Responsável por organizar e separar a equipe em áreas como banco de dados e modelagem das classes model. Desenvolveu todo o backend, auxiliou Felipe Gomes no frontend e implementou a integração com o serviço de hospedagem de imagens Cloudinary.
+- **Victor Augusto**: Executor das tarefas e demandas do projeto.
+- **Felipe Gomes**: Programou o frontend em conjunto com Iago José.
+- **Iago José**: Responsável pelo design e concepção da interface, além de colaborar no desenvolvimento do frontend.
 
-## Contributing
+---
 
-Thank you for considering contributing to our starter kit! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+# Domus
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Domus é uma plataforma web para divulgação de casas para aluguel e venda.
 
-## License
+O objetivo do projeto é facilitar a conexão entre proprietários, imobiliárias e pessoas interessadas em encontrar imóveis residenciais, oferecendo uma experiência moderna, rápida e intuitiva.
 
-The Laravel + React starter kit is open-sourced software licensed under the MIT license.
+---
 
-# Laravel com React Router DOM e Inertia.js
+**Tecnologias:** Laravel 12, React 19, TypeScript, Vite, Tailwind, Inertia.js e React Router DOM.
 
-Este projeto demonstra como usar React Router DOM com Laravel e Inertia.js, mantendo o Inertia.js apenas como fachada para a camada de servidor.
+---
 
-## Installation
+---
+
+## 🚀 Como rodar o projeto do zero
+
+### Pré-requisitos
+
+- PHP 8.2 ou superior
+- Composer
+- Node.js (recomendado 18+)
+- NPM
+
+### Passo a passo rápido
 
 1. **Clone o repositório:**
-```bash
-git clone <repository-url>
-cd trabvirso
-```
+   ```bash
+   git clone https://github.com/kralluz/trabvirso.git
+   cd trabvirso
+   ```
 
-2. **Instale as dependências:**
+2. **Instale as dependências e prepare o ambiente:**
+   ```bash
+   npm run setup
+   ```
+   > Isso instala dependências do PHP e Node, cria o banco SQLite e executa as migrações.
+
+3. **Inicie o projeto:**
+   ```bash
+   npm run start
+   ```
+   > Isso sobe o servidor Laravel (porta 8000) e o Vite (porta 5173) juntos.
+
+Pronto! Acesse [http://localhost:5173](http://localhost:5173) para usar o frontend React.
+
+---
+
+## 🛠️ Scripts úteis
+
+| Comando              | O que faz                                      |
+|----------------------|------------------------------------------------|
+| npm run setup        | Instala tudo e prepara o banco                 |
+| npm run start        | Sobe Laravel + Vite juntos                     |
+| npm run serve        | Sobe só o backend Laravel                      |
+| npm run dev          | Sobe só o frontend React/Vite                  |
+| npm run prepare-db   | Cria banco SQLite e executa migrações          |
+| npm run reset-db     | Reseta o banco de dados                        |
+| npm run build        | Compila assets para produção                   |
+| npm run clear        | Limpa caches do Laravel                        |
+
+---
+
+## 📝 Configuração manual (opcional)
+
+Se preferir, pode rodar cada etapa manualmente:
+
 ```bash
 composer install
 npm install
-```
-
-3. **Configure o ambiente:**
-```bash
 cp .env.example .env
 php artisan key:generate
-```
-
-4. **Configure o banco de dados:**
-```bash
+touch database/database.sqlite
 php artisan migrate
-```
-
-5. **Compile os assets:**
-```bash
 npm run dev
-```
-
-6. **Inicie o servidor:**
-```bash
 php artisan serve
 ```
 
-**📝 NOTA:** O banco iniciará vazio. Você pode criar sua conta pelo frontend e começar a usar a aplicação normalmente.
+---
+
+## 📦 Tecnologias principais
+
+- Laravel 12
+- React 19 + TypeScript
+- Vite
+- TailwindCSS
+- Inertia.js
+- React Router DOM 7
+- SQLite (banco de dados)
+
+---
+
+## 🗂️ Estrutura do projeto
+
+- Backend: pasta raiz padrão Laravel
+- Frontend: `resources/js/`
+- Rotas React: `AppRoutes.tsx`
+- Rotas API: `routes/api.php`
+- Rotas web: `routes/web.php`
+
+---
+
+## 🐞 Dicas e solução de problemas
+
+- Se der erro de banco SQLite, rode:
+  ```bash
+  npm run prepare-db
+  ```
+- Para mudar a porta do backend:
+  ```bash
+  php artisan serve --port=8001
+  ```
+- Para rodar só o frontend:
+  ```bash
+  npm run dev
+  ```
+
+---
+
+## � Autenticação
+
+- Crie sua conta pelo frontend normalmente.
+- O sistema já redireciona para login se não estiver autenticado.
+
+---
+
+## 📄 Licença
+
+MIT
 
 ## Tecnologias utilizadas
 
