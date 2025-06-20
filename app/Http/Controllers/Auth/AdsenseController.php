@@ -16,24 +16,21 @@ class AdsenseController extends Controller
     private function user()
     {
         return User::find(session('user_id'));
-    }
-
-    public function index(): JsonResponse
+    }    public function index(): JsonResponse
     {
         $adsenses = Adsense::with(['user:id,name,email','images'])->get();
         return response()->json([
             'success' => true,
             'data' => $adsenses->map(function($adsense) {
-                $adsense->image_url = $adsense->images->first()?->url;
-                unset($adsense->images);
-                return $adsense;
+                $data = $adsense->toArray();
+                $data['image_url'] = $adsense->images->first()?->url;
+                unset($data['images']);
+                return $data;
             }),
             'total' => $adsenses->count(),
             'message' => 'Lista de anúncios obtida com sucesso'
         ], 200);
-    }
-
-    // Método específico para a página HOME - pública
+    }    // Método específico para a página HOME - pública
     public function home(): JsonResponse
     {
         $adsenses = Adsense::with(['user:id,name,email','images'])
@@ -43,16 +40,15 @@ class AdsenseController extends Controller
         return response()->json([
             'success' => true,
             'data' => $adsenses->map(function($adsense) {
-                $adsense->image_url = $adsense->images->first()?->url;
-                unset($adsense->images);
-                return $adsense;
+                $data = $adsense->toArray();
+                $data['image_url'] = $adsense->images->first()?->url;
+                unset($data['images']);
+                return $data;
             }),
             'total' => $adsenses->count(),
             'message' => 'Lista pública de anúncios obtida com sucesso'
         ], 200);
-    }
-
-    public function show($id): JsonResponse
+    }    public function show($id): JsonResponse
     {
         $adsense = Adsense::with(['user:id,name,email','images'])->find((int)$id);
         if (!$adsense) {
@@ -61,14 +57,15 @@ class AdsenseController extends Controller
                 'message' => 'Anúncio não encontrado'
             ], 404);
         }
-        $adsense->image_url = $adsense->images->first()?->url;
-        unset($adsense->images);
+        $data = $adsense->toArray();
+        $data['image_url'] = $adsense->images->first()?->url;
+        unset($data['images']);
         return response()->json([
             'success' => true,
-            'data' => $adsense,
+            'data' => $data,
             'message' => 'Anúncio obtido com sucesso'
         ], 200);
-    }    public function store(Request $request): JsonResponse
+    }public function store(Request $request): JsonResponse
     {
         try {
             $data = $request->validate([
@@ -92,21 +89,21 @@ class AdsenseController extends Controller
                 'description' => $data['description'],
                 'price' => (float)$data['price'],
                 'user_id' => $userId
-            ]);
-
-            if (!empty($data['image_url'])) {
+            ]);            if (!empty($data['image_url'])) {
                 $image = new Image([
                     'url' => $data['image_url']
                 ]);
                 $adsense->images()->save($image);
-                $adsense->image_url = $data['image_url'];
             }
 
             $adsense->load('user:id,name,email');
+            $responseData = $adsense->toArray();
+            $responseData['image_url'] = $adsense->images->first()?->url;
+            unset($responseData['images']);
 
             return response()->json([
                 'success' => true,
-                'data' => $adsense,
+                'data' => $responseData,
                 'message' => 'Anúncio criado com sucesso'
             ], 201);
 
@@ -157,9 +154,7 @@ class AdsenseController extends Controller
                 'title' => $data['title'],
                 'description' => $data['description'],
                 'price' => $data['price']
-            ]);
-
-            if (isset($data['image_url'])) {
+            ]);            if (isset($data['image_url'])) {
                 // Remove existing images
                 $adsense->images()->delete();
                 
@@ -168,14 +163,16 @@ class AdsenseController extends Controller
                     'url' => $data['image_url']
                 ]);
                 $adsense->images()->save($image);
-                $adsense->image_url = $data['image_url'];
             }
 
             $adsense->load('user:id,name,email');
+            $responseData = $adsense->toArray();
+            $responseData['image_url'] = $adsense->images->first()?->url;
+            unset($responseData['images']);
 
             return response()->json([
                 'success' => true,
-                'data' => $adsense,
+                'data' => $responseData,
                 'message' => 'Anúncio atualizado com sucesso'
             ], 200);
 
@@ -260,13 +257,13 @@ class AdsenseController extends Controller
                           ->where('user_id', $userId)
                           ->orderBy('created_at', 'desc')
                           ->get();
-        
-        return response()->json([
+          return response()->json([
             'success' => true,
             'data' => $adsenses->map(function($adsense) {
-                $adsense->image_url = $adsense->images->first()?->url;
-                unset($adsense->images);
-                return $adsense;
+                $data = $adsense->toArray();
+                $data['image_url'] = $adsense->images->first()?->url;
+                unset($data['images']);
+                return $data;
             }),
             'total' => $adsenses->count(),
             'message' => 'Lista de meus anúncios obtida com sucesso'
@@ -287,13 +284,13 @@ class AdsenseController extends Controller
                           ->where('user_id', $userId)
                           ->orderBy('created_at', 'desc')
                           ->get();
-        
-        return response()->json([
+          return response()->json([
             'success' => true,
             'data' => $adsenses->map(function($adsense) {
-                $adsense->image_url = $adsense->images->first()?->url;
-                unset($adsense->images);
-                return $adsense;
+                $data = $adsense->toArray();
+                $data['image_url'] = $adsense->images->first()?->url;
+                unset($data['images']);
+                return $data;
             }),
             'total' => $adsenses->count(),
             'message' => 'Dashboard - Lista de meus anúncios obtida com sucesso'

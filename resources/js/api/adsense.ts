@@ -95,22 +95,27 @@ export async function updateAdsense(
     descricao: string; 
     preco: string;
     images?: File[];
+    imagemFile?: File;
   }
 ): Promise<CardItem> {
   let imageUrl = '';
   
-  // Upload da imagem para o Cloudinary se houver
-  if (data.images && data.images.length > 0) {
-    imageUrl = await uploadToCloudinary(data.images[0]);
+  // Upload da imagem para o Cloudinary se houver (compatibilidade com ambos os formatos)
+  const imageFile = data.imagemFile || (data.images && data.images[0]);
+  if (imageFile) {
+    imageUrl = await uploadToCloudinary(imageFile);
   }
 
-  const body = {
+  const body: any = {
     title: data.titulo,
     description: data.descricao,
-    price: parseFloat(data.preco.replace(/[^0-9\.]/g, "")),
-    image_url: imageUrl || undefined
+    price: parseFloat(data.preco.replace(/[^0-9\.]/g, ""))
   };
 
+  // Só incluir image_url se houver uma nova imagem
+  if (imageUrl) {
+    body.image_url = imageUrl;
+  }
   const res = await request<{ success: boolean; data: any }>(
     `/adsense/${id}`,
     { method: "PUT", body: JSON.stringify(body) }
