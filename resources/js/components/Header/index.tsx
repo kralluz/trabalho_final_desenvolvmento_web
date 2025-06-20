@@ -1,77 +1,82 @@
-import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 import "./header.style.css";
 import LogoBranca from "/resources/js/assets/images/LogoBranca.png";
 
 const Header: React.FC = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const { isAuthenticated, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
-  const path = useLocation();
+  const { pathname } = useLocation();
 
-  const renderHeaderContent = () => {
-    if (path.pathname === "/home") {
-      return isAuthenticated ? (
-        <button className="header-button" onClick={() => navigate("/dashboard")}>
-          Dashboard
-        </button>
-      ) : (
-        <button className="header-button" onClick={() => navigate("/login")}>
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  const renderNavButtons = () => {
+    // If not authenticated, show login/register options
+    if (!isAuthenticated()) {
+      if (pathname === '/register') {
+        return (
+          <button className="header-button" onClick={() => navigate('/login')}>
+            Iniciar Sessão
+          </button>
+        );
+      }
+      if (pathname === '/login') {
+        return (
+          <button className="header-button" onClick={() => navigate('/register')}>
+            Criar Conta
+          </button>
+        );
+      }
+      // Default for unauthenticated users
+      return (
+        <button className="header-button" onClick={() => navigate('/login')}>
           Iniciar Sessão
         </button>
       );
     }
 
-    if (path.pathname === "/login") {
-      return (
-        <button className="header-button" onClick={() => navigate("/register")}>
-          Criar Conta
-        </button>
-      );
-    }
-
-    if (path.pathname === "/register") {
-      return (
-        <button className="header-button" onClick={() => navigate("/login")}>
-          Iniciar Sessão
-        </button>
-      );
-    }
-
-    if (path.pathname === "/dashboard" || path.pathname === "/admin") {
-      return (
-        <button className="header-button secondary" onClick={() => navigate("/home")}>
-          Home
-        </button>
-      );
-    }
-
-    if (path.pathname === "/dashboard" || path.pathname === "/admin" || path.pathname === "/home" || path.pathname === "/AdminDashboard") {
-      return (
-        <button className="header-button secondary" onClick={() => navigate("/login")}>
-          Sair da Sessão
-        </button>
-      );
-    }
-
-
+    // For authenticated users
     return (
       <>
-        <button className="header-button" onClick={() => navigate("/login")}>Iniciar Sessão</button>
-        <button className="header-button" onClick={() => navigate("/dashboard")}>Dashboard</button>
-        <button className="header-button" onClick={() => navigate("/admin")}>Admin</button>
-        <button className="header-button secondary" onClick={() => navigate("/home")}>Home</button>
-        <button className="header-button secondary" onClick={() => navigate("/AdminDashboard")}>AdminDashboard</button>
+        {pathname !== '/home' && (
+          <button className="header-button" onClick={() => navigate('/home')}>
+            Home
+          </button>
+        )}
+        {pathname !== '/dashboard' && (
+          <button className="header-button" onClick={() => navigate('/dashboard')}>
+            Meus Anúncios
+          </button>
+        )}
+        {isAdmin() && pathname !== '/admin' && (
+          <button className="header-button" onClick={() => navigate('/admin')}>
+            Admin
+          </button>
+        )}
+        <button className="header-button secondary" onClick={handleLogout}>
+          Sair
+        </button>
       </>
     );
   };
 
+  // Logo clickable only when authenticated
+  const handleLogoClick = () => {
+    if (isAuthenticated()) {
+      navigate('/home');
+    }
+  };
+
   return (
     <header className="header">
-      <div className="header-logo" onClick={() => navigate("/home")}>
-        <img src={LogoBranca} alt="Logo Domus" className="logo-img" /> 
+      <div className="header-logo" onClick={handleLogoClick} style={{ cursor: isAuthenticated() ? 'pointer' : 'default' }}>
+        <img src={LogoBranca} alt="Logo Domus" className="logo-img" />
       </div>
       <nav className="header-buttons">
-        {renderHeaderContent()}
+        {renderNavButtons()}
       </nav>
     </header>
   );
