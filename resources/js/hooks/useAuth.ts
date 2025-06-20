@@ -183,6 +183,30 @@ export const useAuth = () => {
     return user?.role === 'admin';
   }, [user]);
 
+  const updateUser = useCallback(async (data: UpdateUserData) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await apiService.updateUser(data);
+
+      if (response.success && response.data?.user) {
+        setUser(response.data.user);
+        return true;
+      } else {
+        setError(response.message || 'Erro ao atualizar usuário');
+        return false;
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro ao atualizar usuário';
+      setError(errorMessage);
+      console.error('Update user error:', err);
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   return {
     user,
     loading,
@@ -195,5 +219,6 @@ export const useAuth = () => {
     getCurrentUser,
     isAuthenticated,
     isAdmin,
+    updateUser,  // Expondo o método updateUser
   };
 };

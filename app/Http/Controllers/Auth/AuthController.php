@@ -160,25 +160,13 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         try {
-            // Verificar token Bearer
-            $authHeader = $request->header('Authorization');
-            if (!$authHeader || strpos($authHeader, 'Bearer ') !== 0) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Token de autorização necessário'
-                ], 401);
-            }
-
-            $token = substr($authHeader, 7);
-            $user = User::where('api_token', $token)->first();
-            
+            $user = $request->user();
             if (!$user) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Token inválido ou expirado'
+                    'message' => 'Usuário não autenticado'
                 ], 401);
             }
-
             return response()->json([
                 'success' => true,
                 'data' => [
@@ -193,12 +181,53 @@ class AuthController extends Controller
                 ],
                 'message' => 'Dados do usuário obtidos com sucesso'
             ], 200);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Erro interno do servidor',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Atualiza os dados do usuário autenticado
+     */
+    public function update(Request $request): JsonResponse
+    {
+        try {
+            $data = $request->validate([
+                'name' => 'required|string|max:255',
+            ]);
+
+            $user = $request->user();
+            $user->update($data);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'user' => [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'role' => $user->role,
+                        'created_at' => $user->created_at
+                    ]
+                ],
+                'message' => 'Usuário atualizado com sucesso'
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dados de validação inválidos',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar usuário',
+                'errors' => ['general' => [$e->getMessage()]]
             ], 500);
         }
     }

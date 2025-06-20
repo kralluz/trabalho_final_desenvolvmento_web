@@ -54,6 +54,7 @@ class Kernel extends HttpKernel
     protected $middlewareAliases = [
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,
         'auth.token' => \App\Http\Middleware\AuthToken::class,
+        'auth.api' => \App\Http\Middleware\ApiTokenAuth::class,
         'can' => \Illuminate\Auth\Middleware\Authorize::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,

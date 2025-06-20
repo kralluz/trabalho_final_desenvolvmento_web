@@ -1,33 +1,18 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import ModalEditUser from "../ModalEditUser";
+import UserDropdown from "../UserDropdown";
 import "./header.style.css";
 import LogoBranca from "/resources/js/assets/images/LogoBranca.png";
 
 const Header: React.FC = () => {
-  const { isAuthenticated, isAdmin, logout, user, updateUser } = useAuth();
+  const { isAuthenticated, isAdmin, logout, user } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
-  };
-
-  const handleEditProfile = async (data: {
-    name: string;
-    email: string;
-    currentPassword?: string;
-    newPassword?: string;
-  }) => {
-    try {
-      await updateUser(data);
-      setIsEditModalOpen(false);
-    } catch (error) {
-      console.error('Erro ao atualizar usuário:', error);
-    }
   };
 
   const renderNavButtons = () => {
@@ -73,15 +58,12 @@ const Header: React.FC = () => {
             Admin
           </button>
         )}
-        <button 
-          className="header-button"
-          onClick={() => setIsEditModalOpen(true)}
-        >
-          Perfil
-        </button>
-        <button className="header-button secondary" onClick={handleLogout}>
-          Sair
-        </button>
+        {user && (
+          <UserDropdown 
+            user={user} 
+            onLogout={handleLogout}
+          />
+        )}
       </>
     );
   };
@@ -94,29 +76,14 @@ const Header: React.FC = () => {
   };
 
   return (
-    <>
-      <header className="header">
-        <div className="header-logo" onClick={handleLogoClick} style={{ cursor: isAuthenticated() ? 'pointer' : 'default' }}>
-          <img src={LogoBranca} alt="Logo Domus" className="logo-img" />
-        </div>
-        <nav className="header-buttons">
-          {renderNavButtons()}
-        </nav>
-      </header>
-
-      {/* Modal de Edição de Perfil */}
-      {user && (
-        <ModalEditUser
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-          onSubmit={handleEditProfile}
-          initialData={{
-            name: user.name,
-            email: user.email
-          }}
-        />
-      )}
-    </>
+    <header className="header">
+      <div className="header-logo" onClick={handleLogoClick} style={{ cursor: isAuthenticated() ? 'pointer' : 'default' }}>
+        <img src={LogoBranca} alt="Logo Domus" className="logo-img" />
+      </div>
+      <nav className="header-buttons">
+        {renderNavButtons()}
+      </nav>
+    </header>
   );
 };
 

@@ -130,6 +130,19 @@ class ApiService {
     }
   }
 
+  // User Methods
+  async updateUser(data: UpdateUserData): Promise<ApiResponse<{ user: User }>> {
+    try {
+      return await this.request('/auth/me', {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+    } catch (error) {
+      console.error('Update user error:', error);
+      throw error;
+    }
+  }
+
   async getAdsenseById(id: number): Promise<ApiResponse<Adsense>> {
     try {
       return await this.request(`/adsense/${id}`);
@@ -218,19 +231,6 @@ class ApiService {
       return await this.request('/health');
     } catch (error) {
       console.error('Health check error:', error);
-      throw error;
-    }
-  }
-
-  // User Methods
-  async updateUser(data: UpdateUserData): Promise<ApiResponse<{ user: User }>> {
-    try {
-      return await this.request('/auth/user', {
-        method: 'PUT',
-        body: JSON.stringify(data)
-      });
-    } catch (error) {
-      console.error('Update user error:', error);
       throw error;
     }
   }

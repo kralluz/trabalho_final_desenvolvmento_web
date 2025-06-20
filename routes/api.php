@@ -82,6 +82,15 @@ Route::get('/docs', function () {
                     'descricao' => 'Retorna dados do usuário autenticado'
                 ],
                 [
+                    'metodo' => 'PUT',
+                    'caminho' => '/api/auth/me',
+                    'descricao' => 'Atualiza dados do usuário autenticado',
+                    'parametros' => [
+                        'name' => 'string (obrigatório)',
+                    ],
+                    'requer_auth' => true
+                ],
+                [
                     'metodo' => 'GET',
                     'caminho' => '/api/users',
                     'descricao' => 'Lista todos os usuários'
@@ -154,12 +163,15 @@ Route::get('/users', function () {
     }
 });
 
-// Rotas de autenticação
+// Autenticação
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/me', [AuthController::class, 'me']);
+    Route::middleware('auth.api')->group(function() {
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::get('/me', [AuthController::class, 'me']);
+        Route::put('/me', [AuthController::class, 'update']); // Nova rota para atualização
+    });
 });
 
 // CRUD de Adsense
@@ -198,7 +210,7 @@ Route::prefix('images')->group(function () {
 Route::get('/cloudinary/signature', [CloudinaryController::class, 'generateSignature']);
 
 // Rotas autenticadas
-Route::middleware(['auth:sanctum'])->group(function () {
+Route::middleware(['auth.api'])->group(function () {
     // Rotas de imagens
     Route::post('/images', [ImageController::class, 'store']);
     Route::delete('/images/{id}', [ImageController::class, 'destroy']);
