@@ -12,43 +12,82 @@ import TermsOfUse from "./pages/TermsOfUsePage";
 import PrivacyPolicy from "./pages/PrivacyPolicyPage";
 import Help from "./pages/HelpPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
 
 const AppRoutes: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, initializing } = useAuth();
 
-  // Function to check auth state and redirect for login/register pages
-  const renderAuthRoute = (Component: React.ComponentType) => {
-    return isAuthenticated() ? <Navigate to="/dashboard" replace /> : <Component />;
-  };
-
-  // Function to check auth state and redirect for protected pages
-  const renderProtectedRoute = (Component: React.ComponentType) => {
-    return isAuthenticated() ? <Component /> : <Navigate to="/login" replace />;
-  };
+  // Show loading while checking auth state
+  if (initializing) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        flexDirection: 'column',
+        gap: '20px'
+      }}>
+        <div style={{
+          width: '50px',
+          height: '50px',
+          border: '4px solid #f3f3f3',
+          borderTop: '4px solid #ff6f00',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }}></div>
+        <p>Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <Routes>
       <Route path="/" element={<MainLayout />}>
-        {/* Redirect root to home or dashboard based on auth */}
+        {/* Redirect root based on auth state */}
         <Route index element={
-          isAuthenticated() ? <Navigate to="/dashboard" replace /> : <Navigate to="/home" replace />
+          isAuthenticated() ? <Navigate to="/home" replace /> : <Navigate to="/login" replace />
         } />
         
-        {/* Public routes */}
-        <Route path="/login" element={renderAuthRoute(LoginPage)} />
-        <Route path="/register" element={renderAuthRoute(RegisterPage)} />
-        <Route path="/home" element={<Home />} />
+        {/* Auth routes - redirect to home if already logged in */}
+        <Route path="/login" element={
+          <ProtectedRoute requireAuth={false}>
+            <LoginPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/register" element={
+          <ProtectedRoute requireAuth={false}>
+            <RegisterPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Public routes - accessible to everyone */}
         <Route path="/aboutUs" element={<AboutUs />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/TermsOfUse" element={<TermsOfUse />} />
         <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
         <Route path="/Help" element={<Help />} />
         
-        {/* Protected routes */}
-        <Route path="/dashboard" element={renderProtectedRoute(Dashboard)} />
-        <Route path="/admin" element={renderProtectedRoute(Admin)} />
-        <Route path="/AdminDashboard" element={renderProtectedRoute(AdminDashboard)} />
+        {/* Semi-protected routes - accessible to everyone but with different behavior */}
+        <Route path="/home" element={<Home />} />
+        
+        {/* Protected routes - only accessible when logged in */}
+        <Route path="/dashboard" element={
+          <ProtectedRoute requireAuth={true}>
+            <Dashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin" element={
+          <ProtectedRoute requireAuth={true}>
+            <Admin />
+          </ProtectedRoute>
+        } />
+        <Route path="/AdminDashboard" element={
+          <ProtectedRoute requireAuth={true}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        } />
         
         {/* 404 route */}
         <Route path="*" element={<NotFound />} />

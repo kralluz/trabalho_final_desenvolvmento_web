@@ -53,7 +53,7 @@ const LoginForm: React.FC = () => {
             if (success) {
                 console.log('Login realizado com sucesso!');
                 setFormValues({ email: '', password: '' });
-                navigate('/dashboard');
+                navigate('/home');
             }
             // Error is handled by the useAuth hook and displayed via error state
         } catch (err) {

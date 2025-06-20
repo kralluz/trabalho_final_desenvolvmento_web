@@ -32,17 +32,21 @@ export default function PostList({ cards, onEdit, onDelete, showActions, showLab
                 ) : (
                     cards.map((card) => (
                         <div className="card" key={card.id}>
-                            {/* Removido labels de status/Novo do topo dos cards */}
-                            <img src={card.imagem || undefined} alt="imagem do card" className="imagemCard" />
+                            <div className="card-image-container">
+                                <img src={card.imagem || undefined} alt="Imóvel" className="imagemCard" />
+                            </div>
 
-                            <h3 className="card-title"> Titulo: {card.titulo} </h3>
+                            <div className="card-content">
+                                <h3 className="card-title">{card.titulo}</h3>
 
-                            <p className="card-text card-descricao">
-                                <span className="label-desc">Descrição:</span> {card.descricao}
-                            </p>
-                            <p className="card-preco">
-                                <span className="label-preco">Preço:</span> {card.preco}
-                            </p>
+                                <p className="card-text card-descricao">{card.descricao}</p>
+
+                                <div className="card-preco">
+                                    <span className="label-preco">Preço</span>
+                                    <span className="price-value">{card.preco}</span>
+                                </div>
+                            </div>
+
                             {showActions && (
                                 <div className="card-actions">
                                     <button className="edit-button" onClick={() => onEdit && onEdit(card)}>
