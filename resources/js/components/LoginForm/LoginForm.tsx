@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import './loginform.style.css';
+import '../shared/AuthForm.style.css';
 
 type LoginFormValues = {
     email: string;
@@ -76,9 +76,11 @@ const LoginForm: React.FC = () => {
     };
 
     return (
-        <form className="login-form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit}>
+            <h2 className="form-title">Iniciar Sessão</h2>
+            
             {error && (
-                <div className="error-message" style={{ color: 'red', marginBottom: '1rem', textAlign: 'center' }}>
+                <div className="error-message">
                     {error}
                 </div>
             )}
@@ -93,7 +95,7 @@ const LoginForm: React.FC = () => {
                     disabled={loading}
                 />
                 {validationErrors.email && (
-                    <span className="field-error" style={{ color: 'red', fontSize: '0.8rem' }}>
+                    <span className="field-error">
                         {validationErrors.email}
                     </span>
                 )}
@@ -109,13 +111,13 @@ const LoginForm: React.FC = () => {
                     disabled={loading}
                 />
                 {validationErrors.password && (
-                    <span className="field-error" style={{ color: 'red', fontSize: '0.8rem' }}>
+                    <span className="field-error">
                         {validationErrors.password}
                     </span>
                 )}
             </div>
 
-            <button className="header-button" type="submit" disabled={loading}>
+            <button className="form-button" type="submit" disabled={loading}>
                 {loading ? 'Entrando...' : 'Entrar'}
             </button>
         </form>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import "./RegisterForm.style.css";
+import "../shared/AuthForm.style.css";
 
 type RegisterFormValues = {
   name: string;
@@ -107,17 +107,18 @@ const RegisterForm: React.FC = () => {
       setSuccessMessage(null);
     }
   };
-
   return (
-    <form className="register-form" onSubmit={handleSubmit}>
-      <h2 className="form-title">Registrar no Trabvirso</h2>      {error && (
-        <div className="error-message" style={{ color: 'red', marginBottom: '1rem', textAlign: 'center' }}>
+    <form className="auth-form" onSubmit={handleSubmit}>
+      <h2 className="form-title">Registrar no Trabvirso</h2>
+      
+      {error && (
+        <div className="error-message">
           {error}
         </div>
       )}
 
       {successMessage && (
-        <div className="success-message" style={{ color: 'green', marginBottom: '1rem', textAlign: 'center', backgroundColor: '#d4edda', padding: '0.75rem', borderRadius: '4px', border: '1px solid #c3e6cb' }}>
+        <div className="success-message">
           {successMessage}
         </div>
       )}
@@ -132,7 +133,7 @@ const RegisterForm: React.FC = () => {
           disabled={loading}
         />
         {validationErrors.name && (
-          <span className="field-error" style={{ color: 'red', fontSize: '0.8rem' }}>
+          <span className="field-error">
             {validationErrors.name}
           </span>
         )}
@@ -148,7 +149,7 @@ const RegisterForm: React.FC = () => {
           disabled={loading}
         />
         {validationErrors.email && (
-          <span className="field-error" style={{ color: 'red', fontSize: '0.8rem' }}>
+          <span className="field-error">
             {validationErrors.email}
           </span>
         )}
@@ -164,7 +165,7 @@ const RegisterForm: React.FC = () => {
           disabled={loading}
         />
         {validationErrors.password && (
-          <span className="field-error" style={{ color: 'red', fontSize: '0.8rem' }}>
+          <span className="field-error">
             {validationErrors.password}
           </span>
         )}
@@ -180,7 +181,7 @@ const RegisterForm: React.FC = () => {
           disabled={loading}
         />
         {validationErrors.confirmPassword && (
-          <span className="field-error" style={{ color: 'red', fontSize: '0.8rem' }}>
+          <span className="field-error">
             {validationErrors.confirmPassword}
           </span>
         )}
@@ -199,20 +200,20 @@ const RegisterForm: React.FC = () => {
       </div>
 
       <button 
-        className="header-button" 
+        className="form-button" 
         type="submit"
         disabled={loading}
       >
         {loading ? 'Registrando...' : 'Registrar'}
       </button>
       
-      <div className="form-links" style={{ textAlign: 'center', marginTop: '1rem' }}>
+      <div className="form-links">
         <p>
           Já tem uma conta?{' '}
           <button 
             type="button" 
+            className="form-link-button"
             onClick={() => navigate('/login')}
-            style={{ background: 'none', border: 'none', color: 'blue', textDecoration: 'underline', cursor: 'pointer' }}
           >
             Faça login
           </button>
