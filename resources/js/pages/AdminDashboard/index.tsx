@@ -1,10 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../contexts/AuthContext";
 import "./admindashboard.style.css";
 
 const AdminDashboard: React.FC = () => {
-  const { user, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
  // useEffect(() => {

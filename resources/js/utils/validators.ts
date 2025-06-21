@@ -4,7 +4,7 @@ export const validateEmail = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-export const validatePassword = (password: string): { isValid: boolean; errors: string[] } => {
+export const validatePassword = (_password: string): { isValid: boolean; errors: string[] } => {
   const errors: string[] = [];
   
   return {

@@ -4,11 +4,9 @@ import ModalCreateAd from '@/components/ModalCreateAd';
 import ModalEditAd from '@/components/ModalEditAd';
 import PostList, { CardItem } from '@/components/PostList';
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import './dashboard.style.css';
 
 const Dashboard: React.FC = () => {
-    const navigate = useNavigate();
     const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
@@ -30,10 +28,6 @@ const Dashboard: React.FC = () => {
         };
         fetchCards();
     }, []);
-
-    const handleNavigate = () => {
-        navigate('/home');
-    };
 
     const handleNewAd = () => {
         setIsCreateModalOpen(true);

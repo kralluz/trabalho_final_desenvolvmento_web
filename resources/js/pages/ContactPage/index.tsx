@@ -41,8 +41,7 @@ const ContactPage: React.FC = () => {
         email: '',
         subject: '',
         message: ''
-      });
-    } catch (error) {
+      });    } catch {
       setSubmitStatus({
         type: 'error',
         message: 'Erro ao enviar mensagem. Por favor, tente novamente.'

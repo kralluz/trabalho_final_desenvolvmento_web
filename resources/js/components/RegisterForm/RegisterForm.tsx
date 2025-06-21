@@ -63,10 +63,9 @@ const RegisterForm: React.FC = () => {
 
     if (!validateForm()) {
       return;
-    }
-
-    try {
-      const { confirmPassword, ...registerData } = formValues;
+    }    try {
+      const { confirmPassword: _unused, ...registerData } = formValues;
+      void _unused; // Evitar warning de variável não utilizada
       const success = await register(registerData);
         if (success) {
         console.log("Registro realizado com sucesso!");

@@ -18,8 +18,7 @@ class ApiService {
   constructor() {
     this.token = localStorage.getItem('auth_token');
   }
-
-  private async request<T = any>(
+  private async request<T = unknown>(
     endpoint: string, 
     options: RequestInit = {}
   ): Promise<T> {

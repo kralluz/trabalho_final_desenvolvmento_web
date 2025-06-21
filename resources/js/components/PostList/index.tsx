@@ -15,10 +15,9 @@ interface PostListProps {
     onEdit?: (card: CardItem) => void;
     onDelete?: (card: CardItem) => void;
     showActions?: boolean;
-    showLabels?: boolean;
 }
 
-export default function PostList({ cards, onEdit, onDelete, showActions, showLabels }: PostListProps) {
+export default function PostList({ cards, onEdit, onDelete, showActions }: PostListProps) {
     return (
         <div className="post-list-container">
             <div className="cards-container">
@@ -26,7 +25,7 @@ export default function PostList({ cards, onEdit, onDelete, showActions, showLab
                 {cards.length === 0 ? (
                     <div className="no-ads-message">
                         <div className="no-ads-icon">🏠</div>
-                        <h3>Nenhum anúncio para para para...</h3>
+                        <h3>Nenhum anúncio para exibir...</h3>
                         <p>Sua primeira propriedade está esperando para ser anunciada!</p>
                     </div>
                 ) : (
