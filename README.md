@@ -123,35 +123,7 @@ php artisan serve
 - Rotas web: `routes/web.php`
 
 ---
-
-## 🐞 Dicas e solução de problemas
-
-- Se der erro de banco SQLite, rode:
-  ```bash
-  npm run prepare-db
-  ```
-- Para mudar a porta do backend:
-  ```bash
-  php artisan serve --port=8001
-  ```
-- Para rodar só o frontend:
-  ```bash
-  npm run dev
-  ```
-
 ---
-
-## � Autenticação
-
-- Crie sua conta pelo frontend normalmente.
-- O sistema já redireciona para login se não estiver autenticado.
-
----
-
-## 📄 Licença
-
-MIT
-
 ## Tecnologias utilizadas
 
 - Laravel 12.8.0
@@ -222,7 +194,7 @@ O comando `npm run start` iniciará tanto o servidor Laravel (porta 8000) quanto
 
 1. **Clone o repositório:**
    ```bash
-   git clone [URL_DO_REPOSITÓRIO]
+   git clone https://github.com/kralluz/trabalho_final_desenvolvmento_web
    cd trabvirso
    ```
 
@@ -279,56 +251,3 @@ O projeto usa SQLite para facilitar o desenvolvimento. O arquivo do banco de dad
 ```
 database/database.sqlite
 ```
-
-### Para adicionar novas rotas no React Router DOM
-
-1. Abra o arquivo `resources/js/components/react-app.tsx`
-2. Adicione um novo componente para sua página
-3. Adicione a rota no componente `Routes`
-4. Adicione o link na navegação
-
-### Para adicionar novas rotas na API REST
-
-1. Abra o arquivo `routes/api.php`
-2. Adicione novas rotas usando `Route::get()` ou outros métodos HTTP
-
-### Para consumir a API REST nos componentes React
-
-Exemplo de consumo da API:
-
-```tsx
-const [data, setData] = useState(null);
-
-useEffect(() => {
-  fetch('/api/info')
-    .then(response => response.json())
-    .then(data => setData(data));
-}, []);
-```
-
-## Solução de Problemas
-
-### Erro de Banco de Dados
-
-Se você encontrar erros relacionados ao banco de dados SQLite:
-
-```
-Database file at path [database/database.sqlite] does not exist
-```
-
-Execute o comando:
-```bash
-npm run prepare-db
-```
-
-### Porta em uso
-
-Se o servidor Laravel não conseguir iniciar devido a uma porta já em uso, você pode mudar a porta manualmente:
-
-```bash
-php artisan serve --port=8001
-```
-
-## Configuração do Vite
-
-O servidor Vite está configurado para usar `localhost` como host e configurar um proxy para as rotas `/api` para o servidor Laravel na porta 8000.
